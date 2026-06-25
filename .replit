@@ -36,3 +36,13 @@ externalPort = 80
 [[ports]]
 localPort = 8080
 externalPort = 8080
+
+[userenv]
+
+[userenv.shared]
+SUPABASE_PROJECT_ID = "rhfpnzsasqjravradxnf"
+SUPABASE_URL = "https://rhfpnzsasqjravradxnf.supabase.co"
+SUPABASE_PUBLISHABLE_KEY = "sb_publishable_JN_6e0CVbA1iRFs3z3XU4A_xLNoT_Ne"
+VITE_SUPABASE_PROJECT_ID = "rhfpnzsasqjravradxnf"
+VITE_SUPABASE_URL = "https://rhfpnzsasqjravradxnf.supabase.co"
+VITE_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_JN_6e0CVbA1iRFs3z3XU4A_xLNoT_Ne"
