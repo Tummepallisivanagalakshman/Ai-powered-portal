@@ -118,6 +118,13 @@ supabase/
 └── migrations/          # Database schema & policies
 ```
 
+## Security
+
+- All data access is protected by Supabase Row-Level Security (RLS) policies — users can only read and write what their role permits.
+- Permissions are enforced server-side via a `has_role()` security function; roles are never stored on client-editable tables.
+- Dependencies are kept patched against known CVEs (audited via `npm audit` / `bun`).
+- Secrets (Supabase keys, AI credentials) are supplied through environment variables and are never committed to the repository.
+
 ## License
 
 This project is provided as-is for the repository owner.
