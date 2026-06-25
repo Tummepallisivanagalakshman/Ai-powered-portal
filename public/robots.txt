@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+Disallow: /dashboard
+Disallow: /candidate
+Disallow: /recruiter
+Disallow: /manager
+Disallow: /review
+
+Sitemap: https://hire-pal-ai.lovable.app/sitemap.xml

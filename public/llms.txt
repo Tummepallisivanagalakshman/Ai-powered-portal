@@ -1,0 +1,13 @@
+# TalentScreen
+
+> An AI-powered hiring portal for candidates, recruiters, and hiring managers — post jobs, apply with a resume, run AI candidate screening, and make confident hiring decisions.
+
+TalentScreen brings job posting, applications, AI resume screening, AI job-match scoring, and interview question generation into one role-based platform. Candidates browse and apply to roles and track their application status; recruiters post jobs and review AI-screened candidates; hiring managers review shortlists and make decisions.
+
+## Pages
+
+- [Home](/): Overview of TalentScreen's AI hiring and candidate screening features.
+
+## Optional
+
+- [Sign in](/auth): Sign in or create a TalentScreen account.
