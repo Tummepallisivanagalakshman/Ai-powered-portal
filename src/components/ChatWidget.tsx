@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import { MessageCircle, X, Send, Loader2, Sparkles } from "lucide-react";
 import { useAuth } from "@/lib/useAuth";
 import { ROLE_LABELS } from "@/lib/types";
@@ -26,7 +25,7 @@ export function ChatWidget() {
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const sendChat = useServerFn(chatWithAssistant);
+  const sendChat = chatWithAssistant;
 
   const greeting = (role && GREETINGS[role]) || GREETINGS.candidate;
 

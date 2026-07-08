@@ -1,5 +1,4 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -84,8 +83,9 @@ function ReviewPage() {
     queryFn: () => listQuestions(applicationId),
   });
 
-  const screenFn = useServerFn(runScreening);
-  const questionsFn = useServerFn(generateInterviewQuestions);
+  // Replace TanStack Server Functions with direct async calls
+  const screenFn = runScreening;
+  const questionsFn = generateInterviewQuestions;
 
   const screen = useMutation({
     mutationFn: () => screenFn({ data: { applicationId } }),

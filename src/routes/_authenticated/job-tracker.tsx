@@ -32,25 +32,27 @@ const INITIAL_JOBS: JobCard[] = [
 const COLUMNS: JobCard["status"][] = ["Interested", "Applied", "Interview", "Offer", "Rejected"];
 
 function JobTrackerPage() {
-  const [jobs, setJobs] = useState<JobCard[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("career_tracker_jobs");
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch {
-          return INITIAL_JOBS;
-        }
-      }
-    }
-    return INITIAL_JOBS;
-  });
+  const [jobs, setJobs] = useState<JobCard[]>([]);
+  const [loadingJobs, setLoadingJobs] = useState(true);
+
+  // Import apiFetch at the top level
+  const { apiFetch } = require("@/lib/api");
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("career_tracker_jobs", JSON.stringify(jobs));
+    async function fetchJobs() {
+      try {
+        const data = await apiFetch("/tracker/items");
+        // Ensure ID is number matching frontend format
+        setJobs(data.map((j: any) => ({ ...j, id: Number(j.id) })));
+      } catch (err) {
+        toast.error("Failed to load jobs");
+        setJobs(INITIAL_JOBS);
+      } finally {
+        setLoadingJobs(false);
+      }
     }
-  }, [jobs]);
+    fetchJobs();
+  }, []);
 
   const [showAddForm, setShowAddForm] = useState(false);
   
@@ -59,53 +61,72 @@ function JobTrackerPage() {
   const [newPosition, setNewPosition] = useState("");
   const [newNotes, setNewNotes] = useState("");
 
-  const moveCard = (id: number, direction: "left" | "right") => {
-    setJobs(
-      jobs.map((job) => {
-        if (job.id === id) {
-          const currentIdx = COLUMNS.indexOf(job.status);
-          let nextIdx = currentIdx;
-          if (direction === "right" && currentIdx < COLUMNS.length - 1) {
-            nextIdx++;
-          } else if (direction === "left" && currentIdx > 0) {
-            nextIdx--;
-          }
-          const nextStatus = COLUMNS[nextIdx];
-          if (nextStatus !== job.status) {
-            toast.success(`Moved ${job.position} @ ${job.company} to ${nextStatus}!`);
-          }
-          return { ...job, status: nextStatus };
-        }
-        return job;
-      })
-    );
+  const moveCard = async (id: number, direction: "left" | "right") => {
+    const job = jobs.find((j) => j.id === id);
+    if (!job) return;
+
+    const currentIdx = COLUMNS.indexOf(job.status);
+    let nextIdx = currentIdx;
+    if (direction === "right" && currentIdx < COLUMNS.length - 1) {
+      nextIdx++;
+    } else if (direction === "left" && currentIdx > 0) {
+      nextIdx--;
+    }
+    const nextStatus = COLUMNS[nextIdx];
+    
+    if (nextStatus === job.status) return;
+
+    try {
+      await apiFetch(`/tracker/items/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ ...job, status: nextStatus }),
+      });
+      setJobs(jobs.map((j) => (j.id === id ? { ...j, status: nextStatus } : j)));
+      toast.success(`Moved ${job.position} @ ${job.company} to ${nextStatus}!`);
+    } catch (err) {
+      toast.error("Failed to move job card.");
+    }
   };
 
-  const addJob = (e: React.FormEvent) => {
+  const addJob = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCompany.trim() || !newPosition.trim()) {
       toast.error("Please fill in Company Name and Position.");
       return;
     }
-    const newJob: JobCard = {
-      id: Date.now(),
+    
+    const payload = {
       company: newCompany,
       position: newPosition,
       date: new Date().toISOString().split("T")[0],
       status: "Interested",
       notes: newNotes,
     };
-    setJobs([...jobs, newJob]);
-    setNewCompany("");
-    setNewPosition("");
-    setNewNotes("");
-    setShowAddForm(false);
-    toast.success(`Job at ${newCompany} added to Interested pipeline!`);
+
+    try {
+      const data = await apiFetch("/tracker/items", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+      setJobs([...jobs, { ...data, id: Number(data.id) }]);
+      setNewCompany("");
+      setNewPosition("");
+      setNewNotes("");
+      setShowAddForm(false);
+      toast.success(`Job at ${newCompany} added to Interested pipeline!`);
+    } catch (err) {
+      toast.error("Failed to add job.");
+    }
   };
 
-  const removeJob = (id: number) => {
-    setJobs(jobs.filter((j) => j.id !== id));
-    toast.success("Job card removed.");
+  const removeJob = async (id: number) => {
+    try {
+      await apiFetch(`/tracker/items/${id}`, { method: "DELETE" });
+      setJobs(jobs.filter((j) => j.id !== id));
+      toast.success("Job card removed.");
+    } catch (err) {
+      toast.error("Failed to remove job.");
+    }
   };
 
   return (

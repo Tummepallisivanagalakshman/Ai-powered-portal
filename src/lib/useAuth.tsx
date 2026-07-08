@@ -1,13 +1,22 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import type { User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
 import type { AppRole } from "./types";
+import { apiFetch } from "./api";
+
+// Simple definition of the user object coming from our Python backend
+export interface User {
+  id: number;
+  email: string;
+  name: string;
+  profile_photo_url?: string | null;
+  // We can add other fields as necessary
+}
 
 interface AuthContextValue {
   user: User | null;
   role: AppRole | null;
   loading: boolean;
-  signOut: () => Promise<void>;
+  signIn: (token: string, user: User) => void;
+  signOut: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -18,48 +27,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (!session?.user) {
-        setRole(null);
+    async function checkAuth() {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        setLoading(false);
+        return;
       }
-    });
-
-    supabase.auth.getSession().then(({ data }) => {
-      setUser(data.session?.user ?? null);
-      if (!data.session?.user) setLoading(false);
-    });
-
-    return () => sub.subscription.unsubscribe();
+      try {
+        const userData = await apiFetch("/users/me");
+        setUser(userData);
+        // Default role based on domain or app logic (since role table is mocked here)
+        setRole("candidate");
+      } catch (err) {
+        console.error("Token verification failed", err);
+        localStorage.removeItem("access_token");
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+    checkAuth();
   }, []);
 
-  useEffect(() => {
-    if (!user) return;
-    let active = true;
-    setLoading(true);
-    supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!active) return;
-        setRole((data?.role as AppRole) ?? null);
-        setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [user]);
+  function signIn(token: string, fetchedUser: User) {
+    localStorage.setItem("access_token", token);
+    setUser(fetchedUser);
+    setRole("candidate"); // Customize as needed
+  }
 
-  async function signOut() {
-    await supabase.auth.signOut();
+  function signOut() {
+    localStorage.removeItem("access_token");
     setUser(null);
     setRole(null);
   }
 
   return (
-    <AuthContext.Provider value={{ user, role, loading, signOut }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, role, loading, signIn, signOut }}>
+      {children}
+    </AuthContext.Provider>
   );
 }
 

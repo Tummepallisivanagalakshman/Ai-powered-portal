@@ -2,7 +2,9 @@
 
 A state-of-the-art, responsive, AI-powered Career Success Portal combined with role-based candidate screening. Candidates can optimize resumes, practice mock interviews, generate letters, and track pipelines while recruiters and managers screen applicants.
 
-![Stack](https://img.shields.io/badge/React-19-61dafb) ![Stack](https://img.shields.io/badge/TanStack_Start-1.x-ff4154) ![Stack](https://img.shields.io/badge/Supabase-Backend-3ecf8e) ![Stack](https://img.shields.io/badge/Tailwind-v4-38bdf8)
+The application has been migrated from a frontend-only Supabase design to a decoupled architecture consisting of a **React 19 Frontend** and a **Python FastAPI Backend** with JWT authentication and relational Postgres/SQLite persistence.
+
+![Stack](https://img.shields.io/badge/React-19-61dafb) ![Stack](https://img.shields.io/badge/FastAPI-0.111-009688) ![Stack](https://img.shields.io/badge/SQLAlchemy-2.x-red) ![Stack](https://img.shields.io/badge/Alembic-1.x-blue) ![Stack](https://img.shields.io/badge/Tailwind-v4-38bdf8)
 
 ---
 
@@ -17,114 +19,119 @@ A state-of-the-art, responsive, AI-powered Career Success Portal combined with r
 - **Cover Letter Generator:** Generates professional, copyable drafts using selected tone templates.
 - **Interactive Resume Builder:** Supports building resumes across 7 key sections (Personal, Education, Skills, Experience, Projects, Certifications, Achievements) with live preview formatting.
 - **AI Career Chatbot:** Real-time floating and full-page career helper leveraging Gemini context-aware conversations.
-- **Job Tracker Kanban:** Visual pipeline manager tracking job stages (Interested, Applied, Interview, Offer, Rejected) persisted in `localStorage`.
+- **Job Tracker Kanban:** Visual pipeline manager tracking job stages (Interested, Applied, Interview, Offer, Rejected) persisted in the database via the [job_tracker.py](file:///c:/Users/sivan/OneDrive/Attachments/Documents/IIT%20patna_project/backend/app/routers/job_tracker.py) backend.
 
 ### 🛡️ Recruiter & Hiring Manager Screenings
 - **AI Candidate Screening:** Automatically evaluates applicant profiles, returning match scores, strengths/concerns, and interview questions.
-- **Role-Based Workspaces:** Secure portals for Candidate, Recruiter, and Hiring Manager environments, gated server-side via Supabase.
+- **Role-Based Workspaces:** Secure portals for Candidate, Recruiter, and Hiring Manager environments, gated server-side via custom JWT authentication.
 
 ---
 
-## 🛣️ Core Routes
+## 🏗️ Architecture & Flow
 
-| Route | Access | Description |
-| :--- | :--- | :--- |
-| `/` | Public | Landing page with animated illustrations, FAQ, and footer |
-| `/auth` | Public | Sign in / sign up credentials validator |
-| `/candidate` | Candidate | User Dashboard with weekly gauges, stats, and charts |
-| `/resume-analyzer` | Candidate | Drag-and-drop resume auditor |
-| `/ats-score` | Candidate | Granite parse checker |
-| `/job-match` | Candidate | JD comparator and recommendation reporter |
-| `/mock-interview` | Candidate | AI grade questions and grader panel |
-| `/roadmap` | Candidate | AI learning roadmap compiler |
-| `/cover-letter` | Candidate | Draft generator |
-| `/resume-builder` | Candidate | Form inputs and live formatted print preview |
-| `/career-chat` | Candidate | Chatbot client with suggested pills |
-| `/job-tracker` | Candidate | Kanban tracker pipeline board |
-| `/reports` | Candidate | Weekly history reports |
-| `/profile` | Candidate | Location, preferences, and skills updater |
-| `/settings` | Candidate | Notifications, privacy, and account settings |
-| `/recruiter` | Recruiter | Post and list vacancies, review applications |
-| `/review/$applicationId` | Recruiter | Detailed screening dashboard & questions generator |
-| `/manager` | Hiring Manager | Shortlisted reviews and recruiter notes decider |
+The system flows through a unified Gateway Proxy setup:
+
+```mermaid
+graph TD
+    A[React Client] -->|API Calls /api/...| B[FastAPI Backend - Port 8000]
+    B -->|JWT Auth Verification| C[Database: PostgreSQL / SQLite]
+    B -->|AI Requests Proxy| D[Google Gemini API]
+    B -->|PDF Parsing| E[PyMuPDF Service]
+```
+
+- **Authentication:** Controlled entirely by the backend via JWT (JSON Web Tokens). The frontend stores the token in `localStorage` and routes all API operations through a custom fetch interceptor [api.ts](file:///c:/Users/sivan/OneDrive/Attachments/Documents/IIT%20patna_project/src/lib/api.ts).
+- **AI Integrations:** All AI services (ATS analyzer, interview grader, cover letter generator) run via the backend's [ai_proxy.py](file:///c:/Users/sivan/OneDrive/Attachments/Documents/IIT%20patna_project/backend/app/routers/ai_proxy.py) forwarding requests to Gemini.
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Project Structure
 
-- **Framework:** [TanStack Start](https://tanstack.com/start) (React 19, SSR) on [Vite](https://vitejs.dev)
-- **Backend:** [Supabase](https://supabase.com) — Postgres Database, Auth, Storage
-- **Styling:** Tailwind CSS v4 + Radix UI primitives
-- **AI Engine:** Google Gemini (via Lovable AI Gateway)
-- **Visuals:** Recharts tracking graphs
+The project is split into the React application and the Python backend:
+
+```
+IIT patna_project/
+├── backend/                  # Python FastAPI Backend
+│   ├── app/
+│   │   ├── main.py           # Backend Entrypoint & Router Registry
+│   │   ├── config.py         # Settings & Environment Loader
+│   │   ├── database.py       # SQLAlchemy Session Handler
+│   │   ├── dependencies.py   # FastAPI Dependency Injections (Auth, DB)
+│   │   ├── models/
+│   │   │   └── models.py     # SQLAlchemy DB Schemas
+│   │   ├── routers/          # Modular Routers (Auth, ATS, Tracker, AI)
+│   │   ├── services/         # AIService (Gemini SDK) & PyMuPDF Parsers
+│   │   └── utils/            # JWT & Security Utilities
+│   ├── alembic/              # Database Migration History
+│   ├── requirements.txt      # Python Package Dependencies
+│   └── alembic.ini           # Migration Tool Configuration
+│
+├── src/                      # React 19 Frontend
+│   ├── routes/               # File-based Routing (TanStack Router)
+│   ├── components/           # UI Elements & App Shells
+│   ├── lib/
+│   │   ├── api.ts            # Authenticated Fetch Client
+│   │   ├── useAuth.tsx       # Local JWT Session Provider
+│   │   └── ai.functions.ts   # AI Endpoints Mapping
+│   └── ...
+```
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Setup & Execution
 
-### Prerequisites
-- Node.js / Yarn / Bun installed
-- A Supabase project set up
+### 1. Environment Configuration (`.env`)
 
-### Installation & Run
+Create a `.env` file in the root directory:
+
+```env
+# Frontend Configuration
+VITE_SUPABASE_PROJECT_ID="your-project-id"
+VITE_SUPABASE_URL="https://your-project.supabase.co"
+VITE_SUPABASE_PUBLISHABLE_KEY="your-publishable-key"
+
+# Python Backend Configuration
+DATABASE_URL="sqlite:///./test.db"   # Use postgresql://... for production (Supabase)
+JWT_SECRET_KEY="your-super-secret-jwt-key"
+GOOGLE_API_KEY="your-google-gemini-api-key"
+```
+
+### 2. Running the Python Backend
+
 ```bash
+# Navigate to backend folder (if running from terminal)
+cd backend
+
+# Create & activate a virtual environment
+python -m venv venv
+.\venv\Scripts\activate   # On Windows
+source venv/bin/activate  # On macOS/Linux
+
 # Install dependencies
+pip install -r requirements.txt
+
+# Apply Database Migrations
+alembic upgrade head
+
+# Run FastAPI Server (starts on http://localhost:8000)
+uvicorn app.main:app --reload --port 8000
+```
+
+### 3. Running the React Frontend
+
+```bash
+# From the project root, install packages
 yarn install
 
-# Start the dev server (http://localhost:5000)
+# Run frontend dev server (starts on http://localhost:5000)
 yarn dev
-
-# Compile for production
-yarn build
-```
-
-### Environment Variables (.env)
-Create the following variables in your environment (do **not** commit secrets):
-```env
-VITE_SUPABASE_URL=https://<your-project-ref>.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=<your-publishable-key>
-VITE_SUPABASE_PROJECT_ID=<your-project-ref>
-
-# Server-side environment
-SUPABASE_URL=https://<your-project-ref>.supabase.co
-SUPABASE_PUBLISHABLE_KEY=<your-publishable-key>
-SUPABASE_PROJECT_ID=<your-project-ref>
-```
-
-### Database Setup
-Apply the SQL migrations in `supabase/migrations/` to your Supabase project (in chronological order). They create the schema, row-level security policies, triggers, and the `resumes` storage bucket.
-
-```bash
-# Example: apply migrations with psql
-for f in supabase/migrations/*.sql; do psql "$SUPABASE_DB_URL" -f "$f"; done
-```
-This creates the core tables: `profiles`, `user_roles`, `jobs`, `applications`, and `interview_questions`.
-
----
-
-## 📁 Project Structure
-
-```
-src/
-├── routes/              # File-based routes (TanStack Router)
-│   ├── _authenticated/  # Role-gated and workspace pages
-│   └── ...
-├── components/          # UI components (incl. Radix-based ui/ kit)
-├── integrations/
-│   └── supabase/        # Supabase clients, auth middleware, types
-├── lib/                 # API calls, AI functions, helpers
-└── hooks/               # Custom React hooks
-supabase/
-└── migrations/          # Database schema & policies
 ```
 
 ---
 
-## 🔒 Security
+## 🔒 Security & Roles
 
-- All data access is protected by Supabase Row-Level Security (RLS) policies — users can only read and write what their role permits.
-- Permissions are enforced server-side via a `has_role()` security function; roles are never stored on client-editable tables.
-- Secrets (Supabase keys, AI credentials) are supplied through environment variables and are never committed to the repository.
+- **JWT Tokens:** Transmitted via the `Authorization: Bearer <token>` header, verified against [security.py](file:///c:/Users/sivan/OneDrive/Attachments/Documents/IIT%20patna_project/backend/app/utils/security.py).
+- **Role Control:** Users are assigned default roles (`candidate`, `recruiter`, `manager`) which restrict access to backend routes and frontend layout sections.
 
 ---
 

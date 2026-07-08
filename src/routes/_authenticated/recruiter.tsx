@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Brain,
@@ -586,8 +585,8 @@ function ReviewDialog({
   onClose: () => void;
   onChanged: () => void;
 }) {
-  const screenFn = useServerFn(runScreening);
-  const questionsFn = useServerFn(generateInterviewQuestions);
+  const screenFn = runScreening;
+  const questionsFn = generateInterviewQuestions;
 
   const questionsQuery = useQuery({
     queryKey: ["questions", app?.id],

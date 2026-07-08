@@ -11,7 +11,6 @@ import {
   Bookmark,
 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -92,25 +91,56 @@ function AuthPage() {
     }
 
     setBusy(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: { 
-          full_name: fullName, 
-          role: "candidate" // Force default role for Career Success Portal
-        },
-      },
-    });
-    setBusy(false);
+    try {
+      // 1. Register the user
+      const registerRes = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: fullName || "New User",
+          email: email,
+          password: password,
+        }),
+      });
 
-    if (error) {
-      toast.error(error.message);
-      return;
+      if (!registerRes.ok) {
+        const errorData = await registerRes.json().catch(() => ({}));
+        throw new Error(errorData.detail || "Registration failed");
+      }
+
+      // 2. Automatically log them in to get the JWT token (OAuth2 Form uses x-www-form-urlencoded)
+      const formData = new URLSearchParams();
+      formData.append("username", email);
+      formData.append("password", password);
+
+      const loginRes = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData.toString(),
+      });
+
+      if (!loginRes.ok) {
+        throw new Error("Login failed after registration");
+      }
+
+      const { access_token } = await loginRes.json();
+      
+      // Get the newly registered user's profile
+      const meRes = await fetch("/api/users/me", {
+        headers: { "Authorization": `Bearer ${access_token}` },
+      });
+      const userData = await meRes.json();
+
+      // Sign in locally via Context
+      signIn(access_token, userData);
+
+      toast.success("Account created successfully!");
+      navigate({ to: "/candidate", replace: true });
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setBusy(false);
     }
-    toast.success("Account created successfully!");
-    navigate({ to: "/candidate", replace: true });
   }
 
   async function handleLogin(e: React.FormEvent) {
@@ -121,18 +151,40 @@ function AuthPage() {
     }
 
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: loginEmail,
-      password: loginPassword,
-    });
-    setBusy(false);
+    try {
+      const formData = new URLSearchParams();
+      formData.append("username", loginEmail);
+      formData.append("password", loginPassword);
 
-    if (error) {
-      toast.error(error.message);
-      return;
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData.toString(),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.detail || "Invalid credentials");
+      }
+
+      const { access_token } = await res.json();
+
+      // Fetch user profile
+      const meRes = await fetch("/api/users/me", {
+        headers: { "Authorization": `Bearer ${access_token}` },
+      });
+      const userData = await meRes.json();
+
+      // Update auth context state
+      signIn(access_token, userData);
+
+      toast.success("Signed in successfully!");
+      navigate({ to: "/candidate", replace: true });
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setBusy(false);
     }
-    toast.success("Signed in successfully!");
-    navigate({ to: "/candidate", replace: true });
   }
 
   const handleGoogleSignIn = () => {
