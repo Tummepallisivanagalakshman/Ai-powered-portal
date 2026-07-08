@@ -18,7 +18,6 @@ import { toast } from "sonner";
 import { RoleGate } from "@/components/RoleGate";
 import { AppShell } from "@/components/AppShell";
 import { useAuth } from "@/lib/useAuth";
-import { supabase } from "@/integrations/supabase/client";
 import { applyToJob, getJob, hasApplied } from "@/lib/api";
 import { parseResumeFields } from "@/lib/ai.functions";
 import type { Job } from "@/lib/types";
@@ -79,39 +78,11 @@ function ApplyPage() {
     queryFn: () => hasApplied(userId, jobId),
   });
 
-  // Live updates: subscribe to changes to this job and to this candidate's
-  // applications so the description and application status stay in sync in
-  // real time without a manual refresh.
+  // Refetch job and applied status when jobId changes
   useEffect(() => {
-    const channel = supabase
-      .channel(`apply-${jobId}-${userId}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "jobs", filter: `id=eq.${jobId}` },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["job", jobId] });
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "applications",
-          filter: `candidate_id=eq.${userId}`,
-        },
-        () => {
-          queryClient.invalidateQueries({
-            queryKey: ["has-applied", userId, jobId],
-          });
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [jobId, userId, queryClient]);
+    queryClient.invalidateQueries({ queryKey: ["job", jobId] });
+    queryClient.invalidateQueries({ queryKey: ["has-applied", userId, jobId] });
+  }, [jobId]);
 
   const [values, setValues] = useState<FormValues>({
     fullName: "",

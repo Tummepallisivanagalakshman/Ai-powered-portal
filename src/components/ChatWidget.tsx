@@ -48,7 +48,7 @@ export function ChatWidget() {
     setInput("");
     setLoading(true);
     try {
-      const res = await sendChat({ data: { messages: next } });
+      const res = await sendChat({ data: { message: text, history: messages } });
       setMessages([...next, { role: "assistant", content: res.reply }]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
