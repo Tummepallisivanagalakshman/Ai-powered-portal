@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
-import { Plus, ChevronRight, ChevronLeft, Calendar, Building, MessageSquare, Trash2, ArrowRight } from "lucide-react";
+import { Plus, ChevronRight, ChevronLeft, Calendar, Building, MessageSquare, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { apiFetch } from "@/lib/api";
 
 export const Route = createFileRoute("/_authenticated/job-tracker")({
   head: () => ({
@@ -35,8 +36,6 @@ function JobTrackerPage() {
   const [jobs, setJobs] = useState<JobCard[]>([]);
   const [loadingJobs, setLoadingJobs] = useState(true);
 
-  // Import apiFetch at the top level
-  const { apiFetch } = require("@/lib/api");
 
   useEffect(() => {
     async function fetchJobs() {

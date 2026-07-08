@@ -52,7 +52,7 @@ const BRAND_FEATURES = [
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, signIn } = useAuth();
   const [busy, setBusy] = useState(false);
   
   // Toggle states

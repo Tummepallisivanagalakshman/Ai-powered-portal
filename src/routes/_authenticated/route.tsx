@@ -1,14 +1,16 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) {
+    // Check for our custom JWT token (set by the FastAPI backend login)
+    const token = typeof window !== "undefined"
+      ? localStorage.getItem("access_token")
+      : null;
+    if (!token) {
       throw redirect({ to: "/auth" });
     }
-    return { user: data.user };
+    return { token };
   },
   component: () => <Outlet />,
 });
