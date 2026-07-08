@@ -28,15 +28,20 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 
-
 export const Route = createFileRoute("/_authenticated/apply/$jobId")({
   head: () => ({
     meta: [
       { title: "Apply for a Role — TalentScreen" },
-      { name: "description", content: "Submit your application with your details and resume for this open role." },
+      {
+        name: "description",
+        content: "Submit your application with your details and resume for this open role.",
+      },
       { name: "robots", content: "noindex, nofollow" },
       { property: "og:title", content: "Apply for a Role — TalentScreen" },
-      { property: "og:description", content: "Submit your application and resume for this open role in TalentScreen." },
+      {
+        property: "og:description",
+        content: "Submit your application and resume for this open role in TalentScreen.",
+      },
     ],
   }),
   component: () => (
@@ -47,21 +52,9 @@ export const Route = createFileRoute("/_authenticated/apply/$jobId")({
 });
 
 const formSchema = z.object({
-  fullName: z
-    .string()
-    .trim()
-    .min(1, "Full name is required")
-    .max(120, "Full name is too long"),
-  email: z
-    .string()
-    .trim()
-    .email("Enter a valid email address")
-    .max(255, "Email is too long"),
-  phone: z
-    .string()
-    .trim()
-    .min(7, "Enter a valid phone number")
-    .max(30, "Phone number is too long"),
+  fullName: z.string().trim().min(1, "Full name is required").max(120, "Full name is too long"),
+  email: z.string().trim().email("Enter a valid email address").max(255, "Email is too long"),
+  phone: z.string().trim().min(7, "Enter a valid phone number").max(30, "Phone number is too long"),
   education: z.string().trim().min(1, "Education is required").max(2000),
   skills: z.string().trim().min(1, "Skills are required").max(2000),
   experience: z.string().trim().min(1, "Experience is required").max(4000),
@@ -142,8 +135,7 @@ function ApplyPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.email]);
 
-  const set = (key: keyof FormValues, value: string) =>
-    setValues((v) => ({ ...v, [key]: value }));
+  const set = (key: keyof FormValues, value: string) => setValues((v) => ({ ...v, [key]: value }));
 
   // When a PDF resume is selected, extract its text and use AI to auto-fill the
   // form. Existing values entered by the user are preserved (only empty fields
@@ -230,20 +222,15 @@ function ApplyPage() {
             <CheckCircle2 className="h-8 w-8 text-primary" />
           </div>
 
-          <h2 className="mt-4 font-display text-2xl font-semibold">
-            Application submitted!
-          </h2>
+          <h2 className="mt-4 font-display text-2xl font-semibold">Application submitted!</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Your application for{" "}
-            <span className="font-medium text-foreground">{job?.title}</span> has
-            been received. Its status is now <Badge>Applied</Badge>. You can track
-            its progress from your dashboard.
+            Your application for <span className="font-medium text-foreground">{job?.title}</span>{" "}
+            has been received. Its status is now <Badge>Applied</Badge>. You can track its progress
+            from your dashboard.
           </p>
           {job && (
             <div className="mt-6 rounded-xl border border-border bg-secondary/30 p-5 text-left">
-              <h3 className="font-display text-sm font-semibold">
-                About this role
-              </h3>
+              <h3 className="font-display text-sm font-semibold">About this role</h3>
               <JobDescription job={job} className="mt-2" />
             </div>
           )}
@@ -262,10 +249,7 @@ function ApplyPage() {
   }
 
   return (
-    <AppShell
-      title="Job application"
-      subtitle="Fill in your details to apply for this position."
-    >
+    <AppShell title="Job application" subtitle="Fill in your details to apply for this position.">
       <div className="mb-4">
         <Button variant="ghost" size="sm" asChild>
           <Link to="/jobs">
@@ -286,9 +270,7 @@ function ApplyPage() {
         <div className="mx-auto max-w-lg space-y-4">
           <div className="rounded-xl border border-border bg-card p-8 text-center">
             <CheckCircle2 className="mx-auto h-10 w-10 text-primary" />
-            <h2 className="mt-3 font-display text-xl font-semibold">
-              You've already applied
-            </h2>
+            <h2 className="mt-3 font-display text-xl font-semibold">You've already applied</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               You have already submitted an application for {job.title}.
             </p>
@@ -301,16 +283,12 @@ function ApplyPage() {
             <JobDescription job={job} className="mt-3" />
           </div>
         </div>
-
       ) : (
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Job summary */}
           <aside className="lg:col-span-1">
             <div className="animate-fade-up rounded-2xl border border-border bg-card p-5 shadow-soft lg:sticky lg:top-24">
-
-              <h2 className="font-display text-lg font-semibold leading-tight">
-                {job.title}
-              </h2>
+              <h2 className="font-display text-lg font-semibold leading-tight">{job.title}</h2>
               <div className="mt-3 space-y-2 text-sm text-muted-foreground">
                 <p className="flex items-center gap-1.5">
                   <Briefcase className="h-4 w-4" /> {job.department || "General"}
@@ -344,12 +322,10 @@ function ApplyPage() {
               <JobDescription job={job} className="mt-5 border-t border-border pt-4" />
 
               <p className="mt-4 flex items-center gap-1.5 text-xs text-success">
-                <Radio className="h-3.5 w-3.5 animate-pulse" /> Live — updates in
-                real time
+                <Radio className="h-3.5 w-3.5 animate-pulse" /> Live — updates in real time
               </p>
             </div>
           </aside>
-
 
           {/* Application form */}
           <form
@@ -357,13 +333,8 @@ function ApplyPage() {
             style={{ animationDelay: "90ms" }}
             className="animate-fade-up space-y-5 rounded-2xl border border-border bg-card p-6 shadow-soft lg:col-span-2"
           >
-
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field
-                id="fullName"
-                label="Full name"
-                error={errors.fullName}
-              >
+              <Field id="fullName" label="Full name" error={errors.fullName}>
                 <Input
                   id="fullName"
                   value={values.fullName}
@@ -422,20 +393,14 @@ function ApplyPage() {
               />
             </Field>
 
-            <Field
-              id="resume"
-              label="Resume (PDF)"
-              error={errors.resume}
-            >
+            <Field id="resume" label="Resume (PDF)" error={errors.resume}>
               <div className="flex items-center gap-2">
                 <Input
                   id="resume"
                   type="file"
                   accept="application/pdf,.pdf"
                   disabled={autofilling}
-                  onChange={(e) =>
-                    handleResumeChange(e.target.files?.[0] ?? null)
-                  }
+                  onChange={(e) => handleResumeChange(e.target.files?.[0] ?? null)}
                 />
                 <Upload className="h-4 w-4 shrink-0 text-muted-foreground" />
               </div>
@@ -452,12 +417,7 @@ function ApplyPage() {
               )}
             </Field>
 
-            <Field
-              id="coverNote"
-              label="Cover letter"
-              error={errors.coverNote}
-              optional
-            >
+            <Field id="coverNote" label="Cover letter" error={errors.coverNote} optional>
               <Textarea
                 id="coverNote"
                 rows={4}
@@ -468,17 +428,11 @@ function ApplyPage() {
             </Field>
 
             <div className="flex items-center justify-end gap-3 pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate({ to: "/jobs" })}
-              >
+              <Button type="button" variant="outline" onClick={() => navigate({ to: "/jobs" })}>
                 Cancel
               </Button>
               <Button type="submit" disabled={mutation.isPending || autofilling}>
-                {mutation.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Submit application
               </Button>
             </div>
@@ -489,13 +443,7 @@ function ApplyPage() {
   );
 }
 
-function JobDescription({
-  job,
-  className = "",
-}: {
-  job: Job;
-  className?: string;
-}) {
+function JobDescription({ job, className = "" }: { job: Job; className?: string }) {
   const description = job.description?.trim();
   return (
     <div className={className}>
@@ -515,8 +463,6 @@ function JobDescription({
   );
 }
 
-
-
 function Field({
   id,
   label,
@@ -535,9 +481,7 @@ function Field({
       <Label htmlFor={id}>
         {label}
         {optional && (
-          <span className="ml-1 text-xs font-normal text-muted-foreground">
-            (optional)
-          </span>
+          <span className="ml-1 text-xs font-normal text-muted-foreground">(optional)</span>
         )}
       </Label>
       {children}

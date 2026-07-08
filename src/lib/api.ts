@@ -1,12 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { generateResumeSummary, generateJobMatch } from "./ai.functions";
-import type {
-  Application,
-  ApplicationStatus,
-  InterviewQuestion,
-  Job,
-  Profile,
-} from "./types";
+import type { Application, ApplicationStatus, InterviewQuestion, Job, Profile } from "./types";
 
 export type JobInput = {
   title: string;
@@ -27,7 +21,6 @@ export type ApplicationWithJob = Application & {
     "title" | "company" | "department" | "location" | "status" | "description"
   > | null;
 };
-
 
 export type ApplicationWithDetails = Application & {
   jobs: Pick<Job, "title" | "department" | "location"> | null;
@@ -93,9 +86,7 @@ export async function setJobStatus(jobId: string, status: "open" | "closed") {
 
 /* ---------- Applications ---------- */
 
-export async function listMyApplications(
-  userId: string,
-): Promise<ApplicationWithJob[]> {
+export async function listMyApplications(userId: string): Promise<ApplicationWithJob[]> {
   return throwIf(
     await supabase
       .from("applications")
@@ -127,9 +118,7 @@ export type ApplyInput = {
 };
 
 export async function getJob(jobId: string): Promise<Job> {
-  return throwIf(
-    await supabase.from("jobs").select("*").eq("id", jobId).single(),
-  );
+  return throwIf(await supabase.from("jobs").select("*").eq("id", jobId).single());
 }
 
 export async function applyToJob(userId: string, input: ApplyInput) {
@@ -228,15 +217,11 @@ export async function applyToJob(userId: string, input: ApplyInput) {
   );
 }
 
-async function attachCandidates(
-  apps: Application[],
-): Promise<ApplicationWithDetails[]> {
+async function attachCandidates(apps: Application[]): Promise<ApplicationWithDetails[]> {
   const ids = [...new Set(apps.map((a) => a.candidate_id))];
   let profiles: Profile[] = [];
   if (ids.length) {
-    profiles = throwIf(
-      await supabase.from("profiles").select("*").in("id", ids),
-    );
+    profiles = throwIf(await supabase.from("profiles").select("*").in("id", ids));
   }
   const map = new Map(profiles.map((p) => [p.id, p]));
   return apps.map((a) => ({
@@ -263,9 +248,7 @@ export async function listAllApplications(): Promise<ApplicationWithDetails[]> {
   return withCandidates.map((a, i) => ({ ...a, jobs: apps[i].jobs }));
 }
 
-export async function getApplication(
-  id: string,
-): Promise<ApplicationWithDetails> {
+export async function getApplication(id: string): Promise<ApplicationWithDetails> {
   const app = throwIf(
     await supabase
       .from("applications")
@@ -279,30 +262,16 @@ export async function getApplication(
   return { ...withCandidate, jobs: app.jobs };
 }
 
-
-export async function listShortlistedApplications(): Promise<
-  ApplicationWithDetails[]
-> {
+export async function listShortlistedApplications(): Promise<ApplicationWithDetails[]> {
   const all = await listAllApplications();
-  return all.filter((a) =>
-    ["shortlisted", "approved", "rejected"].includes(a.status),
-  );
+  return all.filter((a) => ["shortlisted", "approved", "rejected"].includes(a.status));
 }
 
-export async function updateApplicationStatus(
-  id: string,
-  status: ApplicationStatus,
-) {
-  throwIf(
-    await supabase.from("applications").update({ status }).eq("id", id).select(),
-  );
+export async function updateApplicationStatus(id: string, status: ApplicationStatus) {
+  throwIf(await supabase.from("applications").update({ status }).eq("id", id).select());
 }
 
-export async function updateManagerDecision(
-  id: string,
-  status: ApplicationStatus,
-  notes: string,
-) {
+export async function updateManagerDecision(id: string, status: ApplicationStatus, notes: string) {
   throwIf(
     await supabase
       .from("applications")
@@ -313,17 +282,13 @@ export async function updateManagerDecision(
 }
 
 export async function getResumeUrl(path: string): Promise<string | null> {
-  const { data } = await supabase.storage
-    .from("resumes")
-    .createSignedUrl(path, 120);
+  const { data } = await supabase.storage.from("resumes").createSignedUrl(path, 120);
   return data?.signedUrl ?? null;
 }
 
 /* ---------- Interview questions ---------- */
 
-export async function listQuestions(
-  applicationId: string,
-): Promise<InterviewQuestion[]> {
+export async function listQuestions(applicationId: string): Promise<InterviewQuestion[]> {
   return throwIf(
     await supabase
       .from("interview_questions")

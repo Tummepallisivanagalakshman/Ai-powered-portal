@@ -30,10 +30,17 @@ export const Route = createFileRoute("/_authenticated/manager")({
   head: () => ({
     meta: [
       { title: "Hiring Manager Dashboard — TalentScreen" },
-      { name: "description", content: "Review shortlisted candidates, read AI candidate summaries, and approve or reject with notes." },
+      {
+        name: "description",
+        content:
+          "Review shortlisted candidates, read AI candidate summaries, and approve or reject with notes.",
+      },
       { name: "robots", content: "noindex, nofollow" },
       { property: "og:title", content: "Hiring Manager Dashboard — TalentScreen" },
-      { property: "og:description", content: "Review shortlisted candidates and AI summaries in TalentScreen." },
+      {
+        property: "og:description",
+        content: "Review shortlisted candidates and AI summaries in TalentScreen.",
+      },
     ],
   }),
   component: () => (
@@ -79,9 +86,7 @@ function ManagerDashboard() {
 
       <Tabs defaultValue="awaiting">
         <TabsList>
-          <TabsTrigger value="awaiting">
-            Awaiting decision ({awaiting.length})
-          </TabsTrigger>
+          <TabsTrigger value="awaiting">Awaiting decision ({awaiting.length})</TabsTrigger>
           <TabsTrigger value="decided">Reviewed</TabsTrigger>
         </TabsList>
 
@@ -106,9 +111,7 @@ function ManagerDashboard() {
       <ReviewDialog
         app={review}
         onClose={() => setReview(null)}
-        onChanged={() =>
-          qc.invalidateQueries({ queryKey: ["shortlisted-applications"] })
-        }
+        onChanged={() => qc.invalidateQueries({ queryKey: ["shortlisted-applications"] })}
       />
     </AppShell>
   );
@@ -179,8 +182,7 @@ function ReviewDialog({
   }, [app]);
 
   const decide = useMutation({
-    mutationFn: (status: "approved" | "rejected") =>
-      updateManagerDecision(app!.id, status, notes),
+    mutationFn: (status: "approved" | "rejected") => updateManagerDecision(app!.id, status, notes),
     onSuccess: (_d, status) => {
       toast.success(status === "approved" ? "Candidate approved" : "Candidate rejected");
       onChanged();
@@ -231,9 +233,7 @@ function ReviewDialog({
                     )}
                   </div>
                   {app.ai_recommendation && (
-                    <p className="mt-1 text-sm font-medium text-primary">
-                      {app.ai_recommendation}
-                    </p>
+                    <p className="mt-1 text-sm font-medium text-primary">{app.ai_recommendation}</p>
                   )}
                   <p className="mt-2 text-sm text-muted-foreground">{app.ai_summary}</p>
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -241,17 +241,13 @@ function ReviewDialog({
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                         Key strengths
                       </p>
-                      <p className="mt-1 whitespace-pre-wrap text-sm">
-                        {app.ai_strengths || "—"}
-                      </p>
+                      <p className="mt-1 whitespace-pre-wrap text-sm">{app.ai_strengths || "—"}</p>
                     </div>
                     <div className="rounded-lg bg-card p-3">
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                         Relevant experience
                       </p>
-                      <p className="mt-1 whitespace-pre-wrap text-sm">
-                        {app.ai_experience || "—"}
-                      </p>
+                      <p className="mt-1 whitespace-pre-wrap text-sm">{app.ai_experience || "—"}</p>
                     </div>
                   </div>
                   {app.ai_concerns && (
@@ -259,9 +255,7 @@ function ReviewDialog({
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                         Concerns
                       </p>
-                      <p className="mt-1 whitespace-pre-wrap text-sm">
-                        {app.ai_concerns}
-                      </p>
+                      <p className="mt-1 whitespace-pre-wrap text-sm">{app.ai_concerns}</p>
                     </div>
                   )}
                 </div>

@@ -107,10 +107,7 @@ export function ChatWidget() {
           </div>
 
           {/* Messages */}
-          <div
-            ref={scrollRef}
-            className="flex-1 space-y-3 overflow-y-auto px-4 py-4"
-          >
+          <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
             <div className="flex justify-start">
               <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-muted px-3 py-2 text-sm text-foreground">
                 {greeting}
@@ -119,10 +116,7 @@ export function ChatWidget() {
             {messages.map((m, i) => (
               <div
                 key={i}
-                className={cn(
-                  "flex",
-                  m.role === "user" ? "justify-end" : "justify-start",
-                )}
+                className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}
               >
                 <div
                   className={cn(

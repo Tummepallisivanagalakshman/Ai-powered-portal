@@ -13,12 +13,7 @@ type RevealProps = {
  * Reveals children with a fade-up animation the first time they scroll
  * into view. Respects prefers-reduced-motion via the CSS utility.
  */
-export function Reveal({
-  children,
-  delay = 0,
-  className = "",
-  as: Tag = "div",
-}: RevealProps) {
+export function Reveal({ children, delay = 0, className = "", as: Tag = "div" }: RevealProps) {
   const ref = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -49,9 +44,7 @@ export function Reveal({
     <Component
       ref={ref as React.Ref<HTMLDivElement>}
       className={`${className} transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-        visible
-          ? "translate-y-0 opacity-100 blur-0"
-          : "translate-y-6 opacity-0 blur-[2px]"
+        visible ? "translate-y-0 opacity-100 blur-0" : "translate-y-6 opacity-0 blur-[2px]"
       }`}
       style={{ transitionDelay: `${delay}ms` }}
     >

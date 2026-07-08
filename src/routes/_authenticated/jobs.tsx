@@ -20,21 +20,24 @@ import { listMyApplications, listOpenJobs } from "@/lib/api";
 import type { Job } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/jobs")({
   head: () => ({
     meta: [
       { title: "Job Listings — TalentScreen" },
-      { name: "description", content: "Browse open roles and apply with your resume directly from your candidate workspace." },
+      {
+        name: "description",
+        content:
+          "Browse open roles and apply with your resume directly from your candidate workspace.",
+      },
       { name: "robots", content: "noindex, nofollow" },
       { property: "og:title", content: "Job Listings — TalentScreen" },
-      { property: "og:description", content: "Browse open roles and apply with your resume in the TalentScreen candidate workspace." },
+      {
+        property: "og:description",
+        content:
+          "Browse open roles and apply with your resume in the TalentScreen candidate workspace.",
+      },
     ],
   }),
   component: () => (
@@ -72,10 +75,7 @@ function JobListings() {
   const jobs = jobsQuery.data ?? [];
 
   return (
-    <AppShell
-      title="Job listings"
-      subtitle="Browse all open positions and apply in a few clicks."
-    >
+    <AppShell title="Job listings" subtitle="Browse all open positions and apply in a few clicks.">
       {jobsQuery.isLoading ? (
         <div className="flex justify-center py-16">
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -101,11 +101,7 @@ function JobListings() {
 
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <button
-                      type="button"
-                      onClick={() => setSelected(job)}
-                      className="text-left"
-                    >
+                    <button type="button" onClick={() => setSelected(job)} className="text-left">
                       <h2 className="font-display text-lg font-semibold leading-tight transition-colors group-hover:text-primary">
                         {job.title}
                       </h2>
@@ -116,9 +112,7 @@ function JobListings() {
                       {job.department || "General"}
                     </p>
                   </div>
-                  {job.employment_type && (
-                    <Badge variant="secondary">{job.employment_type}</Badge>
-                  )}
+                  {job.employment_type && <Badge variant="secondary">{job.employment_type}</Badge>}
                 </div>
 
                 {job.company && (
@@ -163,11 +157,7 @@ function JobListings() {
                 )}
 
                 <div className="mt-auto flex gap-2 pt-4">
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => setSelected(job)}
-                  >
+                  <Button variant="outline" className="w-full" onClick={() => setSelected(job)}>
                     <FileText className="mr-1.5 h-4 w-4" /> View details
                   </Button>
                   {appliedJobIds.has(job.id) ? (
@@ -216,15 +206,11 @@ function JobDetailsDialog({
         {job && (
           <>
             <DialogHeader>
-              <DialogTitle className="font-display text-2xl">
-                {job.title}
-              </DialogTitle>
+              <DialogTitle className="font-display text-2xl">{job.title}</DialogTitle>
             </DialogHeader>
 
             <div className="flex flex-wrap gap-2">
-              {job.employment_type && (
-                <Badge variant="secondary">{job.employment_type}</Badge>
-              )}
+              {job.employment_type && <Badge variant="secondary">{job.employment_type}</Badge>}
               {job.status && (
                 <Badge variant="outline" className="capitalize">
                   {job.status}
@@ -235,23 +221,11 @@ function JobDetailsDialog({
             {/* Company & meta details */}
             <div className="grid gap-3 rounded-xl border border-border bg-secondary/30 p-4 sm:grid-cols-2">
               <Meta icon={Building2} label="Company" value={job.company} />
-              <Meta
-                icon={Briefcase}
-                label="Department"
-                value={job.department}
-              />
+              <Meta icon={Briefcase} label="Department" value={job.department} />
               <Meta icon={MapPin} label="Location" value={job.location} />
-              <Meta
-                icon={GraduationCap}
-                label="Experience"
-                value={job.experience_required}
-              />
+              <Meta icon={GraduationCap} label="Experience" value={job.experience_required} />
               {job.employment_type && (
-                <Meta
-                  icon={CalendarClock}
-                  label="Employment type"
-                  value={job.employment_type}
-                />
+                <Meta icon={CalendarClock} label="Employment type" value={job.employment_type} />
               )}
             </div>
 
@@ -330,9 +304,7 @@ function Meta({
     <div className="flex items-start gap-2">
       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
       <div>
-        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          {label}
-        </p>
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
         <p className="text-sm text-foreground">{value}</p>
       </div>
     </div>

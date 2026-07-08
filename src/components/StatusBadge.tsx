@@ -13,10 +13,7 @@ const STYLES: Record<ApplicationStatus, string> = {
 
 export function StatusBadge({ status }: { status: ApplicationStatus }) {
   return (
-    <Badge
-      variant="outline"
-      className={cn("border font-medium", STYLES[status])}
-    >
+    <Badge variant="outline" className={cn("border font-medium", STYLES[status])}>
       {STATUS_LABELS[status]}
     </Badge>
   );

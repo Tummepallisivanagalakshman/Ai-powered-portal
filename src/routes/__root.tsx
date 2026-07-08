@@ -90,8 +90,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "TalentScreen — AI Hiring Portal" },
       {
         property: "og:description",
-        content:
-          "AI-powered candidate screening and role-based hiring workflows for modern teams.",
+        content: "AI-powered candidate screening and role-based hiring workflows for modern teams.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

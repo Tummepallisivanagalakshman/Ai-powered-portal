@@ -17,11 +17,7 @@ import { RoleGate } from "@/components/RoleGate";
 import { AppShell } from "@/components/AppShell";
 import { StatusBadge } from "@/components/StatusBadge";
 import { useAuth } from "@/lib/useAuth";
-import {
-  getResumeUrl,
-  listMyApplications,
-  type ApplicationWithJob,
-} from "@/lib/api";
+import { getResumeUrl, listMyApplications, type ApplicationWithJob } from "@/lib/api";
 import { STATUS_LABELS, type ApplicationStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -38,10 +34,17 @@ export const Route = createFileRoute("/_authenticated/tracking")({
   head: () => ({
     meta: [
       { title: "Application Tracking — TalentScreen" },
-      { name: "description", content: "Follow each of your job applications through the hiring pipeline with a clear status timeline." },
+      {
+        name: "description",
+        content:
+          "Follow each of your job applications through the hiring pipeline with a clear status timeline.",
+      },
       { name: "robots", content: "noindex, nofollow" },
       { property: "og:title", content: "Application Tracking — TalentScreen" },
-      { property: "og:description", content: "Follow your applications through the hiring pipeline in TalentScreen." },
+      {
+        property: "og:description",
+        content: "Follow your applications through the hiring pipeline in TalentScreen.",
+      },
     ],
   }),
   component: () => (
@@ -150,7 +153,6 @@ function Tracking() {
             />
           ))}
         </div>
-
       )}
 
       <DetailsDialog app={selected} onClose={() => setSelected(null)} />
@@ -172,7 +174,6 @@ function ApplicationCard({
       style={{ animationDelay: `${delay}ms` }}
       className="hover-lift animate-fade-up group rounded-2xl border border-border bg-card p-5 shadow-soft"
     >
-
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="font-display text-lg font-semibold leading-tight transition-colors group-hover:text-primary">
@@ -233,14 +234,11 @@ function Timeline({ status }: { status: ApplicationStatus }) {
               <span
                 className={cn(
                   "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-300 sm:mx-auto",
-                  state === "done" &&
-                    "border-success bg-success text-success-foreground",
+                  state === "done" && "border-success bg-success text-success-foreground",
                   state === "current" &&
                     "border-primary bg-primary text-primary-foreground ring-4 ring-primary/20 animate-pop-in",
-                  state === "upcoming" &&
-                    "border-border bg-background text-muted-foreground",
+                  state === "upcoming" && "border-border bg-background text-muted-foreground",
                 )}
-
               >
                 {state === "done" ? (
                   <Check className="h-4 w-4" />
@@ -281,13 +279,7 @@ function Timeline({ status }: { status: ApplicationStatus }) {
   );
 }
 
-function DetailsDialog({
-  app,
-  onClose,
-}: {
-  app: ApplicationWithJob | null;
-  onClose: () => void;
-}) {
+function DetailsDialog({ app, onClose }: { app: ApplicationWithJob | null; onClose: () => void }) {
   const [resumeLoading, setResumeLoading] = useState(false);
 
   async function openResume(path: string) {
@@ -315,7 +307,6 @@ function DetailsDialog({
               </div>
             </DialogHeader>
 
-
             <div className="space-y-5 text-sm">
               {/* Progress */}
               <div>
@@ -334,14 +325,9 @@ function DetailsDialog({
                   <Detail label="Location" value={app.jobs?.location} />
                 </dl>
                 {app.jobs?.description && (
-                  <LongDetail
-                    label="Job description"
-                    value={app.jobs.description}
-                  />
+                  <LongDetail label="Job description" value={app.jobs.description} />
                 )}
               </div>
-
-
 
               {/* Submitted info */}
               <div>
@@ -351,16 +337,10 @@ function DetailsDialog({
                   <Detail label="Email" value={app.email} />
                   <Detail label="Phone" value={app.phone} />
                 </dl>
-                {app.education && (
-                  <LongDetail label="Education" value={app.education} />
-                )}
+                {app.education && <LongDetail label="Education" value={app.education} />}
                 {app.skills && <LongDetail label="Skills" value={app.skills} />}
-                {app.experience && (
-                  <LongDetail label="Experience" value={app.experience} />
-                )}
-                {app.cover_note && (
-                  <LongDetail label="Cover letter" value={app.cover_note} />
-                )}
+                {app.experience && <LongDetail label="Experience" value={app.experience} />}
+                {app.cover_note && <LongDetail label="Cover letter" value={app.cover_note} />}
                 {app.resume_path && (
                   <div className="mt-3">
                     <Button
@@ -389,9 +369,7 @@ function DetailsDialog({
                       <Badge>Score: {app.ai_score}/100</Badge>
                     </div>
                   )}
-                  {app.ai_summary && (
-                    <LongDetail label="Summary" value={app.ai_summary} />
-                  )}
+                  {app.ai_summary && <LongDetail label="Summary" value={app.ai_summary} />}
                 </div>
               )}
 
@@ -431,9 +409,7 @@ function Detail({ label, value }: { label: string; value?: string | null }) {
 function LongDetail({ label, value }: { label: string; value: string }) {
   return (
     <div className="mt-3">
-      {label && (
-        <p className="text-xs text-muted-foreground">{label}</p>
-      )}
+      {label && <p className="text-xs text-muted-foreground">{label}</p>}
       <p className="mt-0.5 whitespace-pre-wrap text-sm">{value}</p>
     </div>
   );

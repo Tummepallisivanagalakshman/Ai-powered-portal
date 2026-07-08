@@ -8,7 +8,10 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
       { title: "Dashboard — TalentScreen" },
-      { name: "description", content: "Your TalentScreen dashboard, routed to the workspace built for your role." },
+      {
+        name: "description",
+        content: "Your TalentScreen dashboard, routed to the workspace built for your role.",
+      },
       { name: "robots", content: "noindex, nofollow" },
       { property: "og:title", content: "Dashboard — TalentScreen" },
       { property: "og:description", content: "Your role-based TalentScreen workspace." },

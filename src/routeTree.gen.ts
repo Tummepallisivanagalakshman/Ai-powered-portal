@@ -14,11 +14,23 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedTrackingRouteImport } from './routes/_authenticated/tracking'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedRoadmapRouteImport } from './routes/_authenticated/roadmap'
+import { Route as AuthenticatedResumeBuilderRouteImport } from './routes/_authenticated/resume-builder'
+import { Route as AuthenticatedResumeAnalyzerRouteImport } from './routes/_authenticated/resume-analyzer'
+import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedRecruiterRouteImport } from './routes/_authenticated/recruiter'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedMockInterviewRouteImport } from './routes/_authenticated/mock-interview'
 import { Route as AuthenticatedManagerRouteImport } from './routes/_authenticated/manager'
 import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
+import { Route as AuthenticatedJobTrackerRouteImport } from './routes/_authenticated/job-tracker'
+import { Route as AuthenticatedJobMatchRouteImport } from './routes/_authenticated/job-match'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCoverLetterRouteImport } from './routes/_authenticated/cover-letter'
+import { Route as AuthenticatedCareerChatRouteImport } from './routes/_authenticated/career-chat'
 import { Route as AuthenticatedCandidateRouteImport } from './routes/_authenticated/candidate'
+import { Route as AuthenticatedAtsScoreRouteImport } from './routes/_authenticated/ats-score'
 import { Route as AuthenticatedReviewApplicationIdRouteImport } from './routes/_authenticated/review.$applicationId'
 import { Route as AuthenticatedApplyJobIdRouteImport } from './routes/_authenticated/apply.$jobId'
 
@@ -46,11 +58,49 @@ const AuthenticatedTrackingRoute = AuthenticatedTrackingRouteImport.update({
   path: '/tracking',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRoadmapRoute = AuthenticatedRoadmapRouteImport.update({
+  id: '/roadmap',
+  path: '/roadmap',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedResumeBuilderRoute =
+  AuthenticatedResumeBuilderRouteImport.update({
+    id: '/resume-builder',
+    path: '/resume-builder',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedResumeAnalyzerRoute =
+  AuthenticatedResumeAnalyzerRouteImport.update({
+    id: '/resume-analyzer',
+    path: '/resume-analyzer',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedRecruiterRoute = AuthenticatedRecruiterRouteImport.update({
   id: '/recruiter',
   path: '/recruiter',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMockInterviewRoute =
+  AuthenticatedMockInterviewRouteImport.update({
+    id: '/mock-interview',
+    path: '/mock-interview',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedManagerRoute = AuthenticatedManagerRouteImport.update({
   id: '/manager',
   path: '/manager',
@@ -61,14 +111,40 @@ const AuthenticatedJobsRoute = AuthenticatedJobsRouteImport.update({
   path: '/jobs',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedJobTrackerRoute = AuthenticatedJobTrackerRouteImport.update({
+  id: '/job-tracker',
+  path: '/job-tracker',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedJobMatchRoute = AuthenticatedJobMatchRouteImport.update({
+  id: '/job-match',
+  path: '/job-match',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCoverLetterRoute =
+  AuthenticatedCoverLetterRouteImport.update({
+    id: '/cover-letter',
+    path: '/cover-letter',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCareerChatRoute = AuthenticatedCareerChatRouteImport.update({
+  id: '/career-chat',
+  path: '/career-chat',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCandidateRoute = AuthenticatedCandidateRouteImport.update({
   id: '/candidate',
   path: '/candidate',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAtsScoreRoute = AuthenticatedAtsScoreRouteImport.update({
+  id: '/ats-score',
+  path: '/ats-score',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedReviewApplicationIdRoute =
@@ -87,11 +163,23 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/ats-score': typeof AuthenticatedAtsScoreRoute
   '/candidate': typeof AuthenticatedCandidateRoute
+  '/career-chat': typeof AuthenticatedCareerChatRoute
+  '/cover-letter': typeof AuthenticatedCoverLetterRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/job-match': typeof AuthenticatedJobMatchRoute
+  '/job-tracker': typeof AuthenticatedJobTrackerRoute
   '/jobs': typeof AuthenticatedJobsRoute
   '/manager': typeof AuthenticatedManagerRoute
+  '/mock-interview': typeof AuthenticatedMockInterviewRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/recruiter': typeof AuthenticatedRecruiterRoute
+  '/reports': typeof AuthenticatedReportsRoute
+  '/resume-analyzer': typeof AuthenticatedResumeAnalyzerRoute
+  '/resume-builder': typeof AuthenticatedResumeBuilderRoute
+  '/roadmap': typeof AuthenticatedRoadmapRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/tracking': typeof AuthenticatedTrackingRoute
   '/apply/$jobId': typeof AuthenticatedApplyJobIdRoute
   '/review/$applicationId': typeof AuthenticatedReviewApplicationIdRoute
@@ -100,11 +188,23 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/ats-score': typeof AuthenticatedAtsScoreRoute
   '/candidate': typeof AuthenticatedCandidateRoute
+  '/career-chat': typeof AuthenticatedCareerChatRoute
+  '/cover-letter': typeof AuthenticatedCoverLetterRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/job-match': typeof AuthenticatedJobMatchRoute
+  '/job-tracker': typeof AuthenticatedJobTrackerRoute
   '/jobs': typeof AuthenticatedJobsRoute
   '/manager': typeof AuthenticatedManagerRoute
+  '/mock-interview': typeof AuthenticatedMockInterviewRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/recruiter': typeof AuthenticatedRecruiterRoute
+  '/reports': typeof AuthenticatedReportsRoute
+  '/resume-analyzer': typeof AuthenticatedResumeAnalyzerRoute
+  '/resume-builder': typeof AuthenticatedResumeBuilderRoute
+  '/roadmap': typeof AuthenticatedRoadmapRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/tracking': typeof AuthenticatedTrackingRoute
   '/apply/$jobId': typeof AuthenticatedApplyJobIdRoute
   '/review/$applicationId': typeof AuthenticatedReviewApplicationIdRoute
@@ -115,11 +215,23 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/_authenticated/ats-score': typeof AuthenticatedAtsScoreRoute
   '/_authenticated/candidate': typeof AuthenticatedCandidateRoute
+  '/_authenticated/career-chat': typeof AuthenticatedCareerChatRoute
+  '/_authenticated/cover-letter': typeof AuthenticatedCoverLetterRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/job-match': typeof AuthenticatedJobMatchRoute
+  '/_authenticated/job-tracker': typeof AuthenticatedJobTrackerRoute
   '/_authenticated/jobs': typeof AuthenticatedJobsRoute
   '/_authenticated/manager': typeof AuthenticatedManagerRoute
+  '/_authenticated/mock-interview': typeof AuthenticatedMockInterviewRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/recruiter': typeof AuthenticatedRecruiterRoute
+  '/_authenticated/reports': typeof AuthenticatedReportsRoute
+  '/_authenticated/resume-analyzer': typeof AuthenticatedResumeAnalyzerRoute
+  '/_authenticated/resume-builder': typeof AuthenticatedResumeBuilderRoute
+  '/_authenticated/roadmap': typeof AuthenticatedRoadmapRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tracking': typeof AuthenticatedTrackingRoute
   '/_authenticated/apply/$jobId': typeof AuthenticatedApplyJobIdRoute
   '/_authenticated/review/$applicationId': typeof AuthenticatedReviewApplicationIdRoute
@@ -130,11 +242,23 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/sitemap.xml'
+    | '/ats-score'
     | '/candidate'
+    | '/career-chat'
+    | '/cover-letter'
     | '/dashboard'
+    | '/job-match'
+    | '/job-tracker'
     | '/jobs'
     | '/manager'
+    | '/mock-interview'
+    | '/profile'
     | '/recruiter'
+    | '/reports'
+    | '/resume-analyzer'
+    | '/resume-builder'
+    | '/roadmap'
+    | '/settings'
     | '/tracking'
     | '/apply/$jobId'
     | '/review/$applicationId'
@@ -143,11 +267,23 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/sitemap.xml'
+    | '/ats-score'
     | '/candidate'
+    | '/career-chat'
+    | '/cover-letter'
     | '/dashboard'
+    | '/job-match'
+    | '/job-tracker'
     | '/jobs'
     | '/manager'
+    | '/mock-interview'
+    | '/profile'
     | '/recruiter'
+    | '/reports'
+    | '/resume-analyzer'
+    | '/resume-builder'
+    | '/roadmap'
+    | '/settings'
     | '/tracking'
     | '/apply/$jobId'
     | '/review/$applicationId'
@@ -157,11 +293,23 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/sitemap.xml'
+    | '/_authenticated/ats-score'
     | '/_authenticated/candidate'
+    | '/_authenticated/career-chat'
+    | '/_authenticated/cover-letter'
     | '/_authenticated/dashboard'
+    | '/_authenticated/job-match'
+    | '/_authenticated/job-tracker'
     | '/_authenticated/jobs'
     | '/_authenticated/manager'
+    | '/_authenticated/mock-interview'
+    | '/_authenticated/profile'
     | '/_authenticated/recruiter'
+    | '/_authenticated/reports'
+    | '/_authenticated/resume-analyzer'
+    | '/_authenticated/resume-builder'
+    | '/_authenticated/roadmap'
+    | '/_authenticated/settings'
     | '/_authenticated/tracking'
     | '/_authenticated/apply/$jobId'
     | '/_authenticated/review/$applicationId'
@@ -211,11 +359,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTrackingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/roadmap': {
+      id: '/_authenticated/roadmap'
+      path: '/roadmap'
+      fullPath: '/roadmap'
+      preLoaderRoute: typeof AuthenticatedRoadmapRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/resume-builder': {
+      id: '/_authenticated/resume-builder'
+      path: '/resume-builder'
+      fullPath: '/resume-builder'
+      preLoaderRoute: typeof AuthenticatedResumeBuilderRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/resume-analyzer': {
+      id: '/_authenticated/resume-analyzer'
+      path: '/resume-analyzer'
+      fullPath: '/resume-analyzer'
+      preLoaderRoute: typeof AuthenticatedResumeAnalyzerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/reports': {
+      id: '/_authenticated/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AuthenticatedReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/recruiter': {
       id: '/_authenticated/recruiter'
       path: '/recruiter'
       fullPath: '/recruiter'
       preLoaderRoute: typeof AuthenticatedRecruiterRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/mock-interview': {
+      id: '/_authenticated/mock-interview'
+      path: '/mock-interview'
+      fullPath: '/mock-interview'
+      preLoaderRoute: typeof AuthenticatedMockInterviewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/manager': {
@@ -232,6 +429,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedJobsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/job-tracker': {
+      id: '/_authenticated/job-tracker'
+      path: '/job-tracker'
+      fullPath: '/job-tracker'
+      preLoaderRoute: typeof AuthenticatedJobTrackerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/job-match': {
+      id: '/_authenticated/job-match'
+      path: '/job-match'
+      fullPath: '/job-match'
+      preLoaderRoute: typeof AuthenticatedJobMatchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -239,11 +450,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/cover-letter': {
+      id: '/_authenticated/cover-letter'
+      path: '/cover-letter'
+      fullPath: '/cover-letter'
+      preLoaderRoute: typeof AuthenticatedCoverLetterRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/career-chat': {
+      id: '/_authenticated/career-chat'
+      path: '/career-chat'
+      fullPath: '/career-chat'
+      preLoaderRoute: typeof AuthenticatedCareerChatRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/candidate': {
       id: '/_authenticated/candidate'
       path: '/candidate'
       fullPath: '/candidate'
       preLoaderRoute: typeof AuthenticatedCandidateRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ats-score': {
+      id: '/_authenticated/ats-score'
+      path: '/ats-score'
+      fullPath: '/ats-score'
+      preLoaderRoute: typeof AuthenticatedAtsScoreRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/review/$applicationId': {
@@ -264,22 +496,46 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAtsScoreRoute: typeof AuthenticatedAtsScoreRoute
   AuthenticatedCandidateRoute: typeof AuthenticatedCandidateRoute
+  AuthenticatedCareerChatRoute: typeof AuthenticatedCareerChatRoute
+  AuthenticatedCoverLetterRoute: typeof AuthenticatedCoverLetterRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedJobMatchRoute: typeof AuthenticatedJobMatchRoute
+  AuthenticatedJobTrackerRoute: typeof AuthenticatedJobTrackerRoute
   AuthenticatedJobsRoute: typeof AuthenticatedJobsRoute
   AuthenticatedManagerRoute: typeof AuthenticatedManagerRoute
+  AuthenticatedMockInterviewRoute: typeof AuthenticatedMockInterviewRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRecruiterRoute: typeof AuthenticatedRecruiterRoute
+  AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
+  AuthenticatedResumeAnalyzerRoute: typeof AuthenticatedResumeAnalyzerRoute
+  AuthenticatedResumeBuilderRoute: typeof AuthenticatedResumeBuilderRoute
+  AuthenticatedRoadmapRoute: typeof AuthenticatedRoadmapRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTrackingRoute: typeof AuthenticatedTrackingRoute
   AuthenticatedApplyJobIdRoute: typeof AuthenticatedApplyJobIdRoute
   AuthenticatedReviewApplicationIdRoute: typeof AuthenticatedReviewApplicationIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAtsScoreRoute: AuthenticatedAtsScoreRoute,
   AuthenticatedCandidateRoute: AuthenticatedCandidateRoute,
+  AuthenticatedCareerChatRoute: AuthenticatedCareerChatRoute,
+  AuthenticatedCoverLetterRoute: AuthenticatedCoverLetterRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedJobMatchRoute: AuthenticatedJobMatchRoute,
+  AuthenticatedJobTrackerRoute: AuthenticatedJobTrackerRoute,
   AuthenticatedJobsRoute: AuthenticatedJobsRoute,
   AuthenticatedManagerRoute: AuthenticatedManagerRoute,
+  AuthenticatedMockInterviewRoute: AuthenticatedMockInterviewRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRecruiterRoute: AuthenticatedRecruiterRoute,
+  AuthenticatedReportsRoute: AuthenticatedReportsRoute,
+  AuthenticatedResumeAnalyzerRoute: AuthenticatedResumeAnalyzerRoute,
+  AuthenticatedResumeBuilderRoute: AuthenticatedResumeBuilderRoute,
+  AuthenticatedRoadmapRoute: AuthenticatedRoadmapRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTrackingRoute: AuthenticatedTrackingRoute,
   AuthenticatedApplyJobIdRoute: AuthenticatedApplyJobIdRoute,
   AuthenticatedReviewApplicationIdRoute: AuthenticatedReviewApplicationIdRoute,

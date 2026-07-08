@@ -12,13 +12,7 @@ function FullScreen() {
   );
 }
 
-export function RoleGate({
-  role: required,
-  children,
-}: {
-  role: AppRole;
-  children: ReactNode;
-}) {
+export function RoleGate({ role: required, children }: { role: AppRole; children: ReactNode }) {
   const { role, loading } = useAuth();
   const navigate = useNavigate();
 

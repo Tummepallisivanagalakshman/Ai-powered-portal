@@ -1,15 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { AppRole } from "@/lib/types";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-3-flash-preview";
 
 export type ChatMessage = { role: "user" | "assistant"; content: string };
 
-async function callGatewayText(
-  messages: Array<{ role: string; content: string }>,
-) {
+async function callGatewayText(messages: Array<{ role: string; content: string }>) {
   const key = process.env.LOVABLE_API_KEY;
   if (!key) throw new Error("AI is not configured (missing API key).");
 
@@ -56,8 +55,16 @@ const ROLE_SYSTEM: Record<AppRole, string> = {
     "characteristics. Be concise and decision-focused.",
 };
 
+interface AppWithJob {
+  status: string;
+  jobs: {
+    title: string;
+    department: string | null;
+  } | null;
+}
+
 async function buildContext(
-  supabase: any,
+  supabase: SupabaseClient,
   role: AppRole,
   userId: string,
 ): Promise<string> {
@@ -73,9 +80,8 @@ async function buildContext(
         .from("jobs")
         .select("id", { count: "exact", head: true })
         .eq("status", "open");
-      const lines = (apps ?? []).map(
-        (a: any) =>
-          `- ${a.jobs?.title ?? "Unknown role"} (${a.jobs?.department ?? "—"}): ${a.status}`,
+      const lines = ((apps ?? []) as unknown as AppWithJob[]).map(
+        (a) => `- ${a.jobs?.title ?? "Unknown role"} (${a.jobs?.department ?? "—"}): ${a.status}`,
       );
       return `CONTEXT — This candidate's applications:\n${
         lines.length ? lines.join("\n") : "(no applications yet)"
@@ -83,10 +89,7 @@ async function buildContext(
     }
 
     // recruiter / hiring_manager
-    const { data: apps } = await supabase
-      .from("applications")
-      .select("status")
-      .limit(500);
+    const { data: apps } = await supabase.from("applications").select("status").limit(500);
     const { count: openJobs } = await supabase
       .from("jobs")
       .select("id", { count: "exact", head: true })

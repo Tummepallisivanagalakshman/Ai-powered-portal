@@ -76,10 +76,17 @@ export const Route = createFileRoute("/_authenticated/recruiter")({
   head: () => ({
     meta: [
       { title: "Recruiter Dashboard — TalentScreen" },
-      { name: "description", content: "Create job postings, run AI candidate screening, shortlist applicants, and generate interview questions." },
+      {
+        name: "description",
+        content:
+          "Create job postings, run AI candidate screening, shortlist applicants, and generate interview questions.",
+      },
       { name: "robots", content: "noindex, nofollow" },
       { property: "og:title", content: "Recruiter Dashboard — TalentScreen" },
-      { property: "og:description", content: "Manage job postings and run AI candidate screening in TalentScreen." },
+      {
+        property: "og:description",
+        content: "Manage job postings and run AI candidate screening in TalentScreen.",
+      },
     ],
   }),
   component: () => (
@@ -104,9 +111,7 @@ function StatCard({
     <div className="rounded-xl border border-border bg-card p-4">
       <div className="flex items-center justify-between">
         <p className="text-3xl font-bold">{value}</p>
-        <span
-          className={`flex h-9 w-9 items-center justify-center rounded-lg ${tone}`}
-        >
+        <span className={`flex h-9 w-9 items-center justify-center rounded-lg ${tone}`}>
           <Icon className="h-5 w-5" />
         </span>
       </div>
@@ -141,9 +146,7 @@ function RecruiterDashboard() {
   const activeJobs = jobs.filter((j) => j.status === "open").length;
   const totalCandidates = new Set(apps.map((a) => a.candidate_id)).size;
   const shortlistedCandidates = new Set(
-    apps
-      .filter((a) => ["shortlisted", "approved"].includes(a.status))
-      .map((a) => a.candidate_id),
+    apps.filter((a) => ["shortlisted", "approved"].includes(a.status)).map((a) => a.candidate_id),
   ).size;
 
   const refreshJobs = () => {
@@ -240,14 +243,10 @@ function RecruiterDashboard() {
                           {job.title}
                         </h3>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          {[job.company, job.department]
-                            .filter(Boolean)
-                            .join(" · ") || "—"}
+                          {[job.company, job.department].filter(Boolean).join(" · ") || "—"}
                         </p>
                       </div>
-                      <Badge
-                        variant={job.status === "open" ? "default" : "secondary"}
-                      >
+                      <Badge variant={job.status === "open" ? "default" : "secondary"}>
                         {job.status === "open" ? "Open" : "Closed"}
                       </Badge>
                     </div>
@@ -259,9 +258,7 @@ function RecruiterDashboard() {
                         </span>
                       )}
                       {job.employment_type && <span>{job.employment_type}</span>}
-                      {job.experience_required && (
-                        <span>{job.experience_required}</span>
-                      )}
+                      {job.experience_required && <span>{job.experience_required}</span>}
                     </div>
 
                     {job.skills && job.skills.length > 0 && (
@@ -279,21 +276,14 @@ function RecruiterDashboard() {
                     </p>
 
                     <div className="mt-auto flex flex-wrap gap-2 pt-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEdit(job)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => openEdit(job)}>
                         <Pencil className="mr-1.5 h-4 w-4" /> Edit
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={async () => {
-                          await setJobStatus(
-                            job.id,
-                            job.status === "open" ? "closed" : "open",
-                          );
+                          await setJobStatus(job.id, job.status === "open" ? "closed" : "open");
                           refreshJobs();
                         }}
                       >
@@ -330,21 +320,16 @@ function RecruiterDashboard() {
                   className="flex w-full flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:border-primary/40"
                 >
                   <div>
-                    <p className="font-medium">
-                      {a.candidate?.full_name ?? "Candidate"}
-                    </p>
+                    <p className="font-medium">{a.candidate?.full_name ?? "Candidate"}</p>
                     <p className="text-sm text-muted-foreground">
-                      {a.jobs?.title ?? "Role"} ·{" "}
-                      {new Date(a.created_at).toLocaleDateString()}
+                      {a.jobs?.title ?? "Role"} · {new Date(a.created_at).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     {typeof a.match_score === "number" && (
                       <Badge className={`gap-1 ${matchTone(a.match_recommendation)}`}>
                         <Target className="h-3 w-3" /> {a.match_score}
-                        {a.match_recommendation
-                          ? ` · ${a.match_recommendation}`
-                          : ""}
+                        {a.match_recommendation ? ` · ${a.match_recommendation}` : ""}
                       </Badge>
                     )}
                     {typeof a.ai_score === "number" && (
@@ -356,7 +341,6 @@ function RecruiterDashboard() {
                   </div>
                 </Link>
               ))}
-
             </div>
           )}
         </TabsContent>
@@ -373,16 +357,13 @@ function RecruiterDashboard() {
         }}
       />
 
-      <AlertDialog
-        open={!!deleteTarget}
-        onOpenChange={(o) => !o && setDeleteTarget(null)}
-      >
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this job posting?</AlertDialogTitle>
             <AlertDialogDescription>
-              "{deleteTarget?.title}" and its applications will be permanently
-              removed. This cannot be undone.
+              "{deleteTarget?.title}" and its applications will be permanently removed. This cannot
+              be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -391,9 +372,7 @@ function RecruiterDashboard() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => deleteTarget && removeJob.mutate(deleteTarget.id)}
             >
-              {removeJob.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+              {removeJob.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -465,8 +444,7 @@ function JobFormDialog({
   }
 
   const mutation = useMutation({
-    mutationFn: () =>
-      isEdit ? updateJob(job!.id, form) : createJob(userId, form),
+    mutationFn: () => (isEdit ? updateJob(job!.id, form) : createJob(userId, form)),
     onSuccess: () => {
       toast.success(isEdit ? "Job updated!" : "Job posted!");
       onSaved();
@@ -482,14 +460,16 @@ function JobFormDialog({
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit job posting" : "Create job posting"}</DialogTitle>
-          <DialogDescription>
-            Candidates will see this and apply directly.
-          </DialogDescription>
+          <DialogDescription>Candidates will see this and apply directly.</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
             <Label>Job title</Label>
-            <Input value={form.title} onChange={set("title")} placeholder="Senior Frontend Engineer" />
+            <Input
+              value={form.title}
+              onChange={set("title")}
+              placeholder="Senior Frontend Engineer"
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
@@ -498,7 +478,11 @@ function JobFormDialog({
             </div>
             <div className="space-y-1.5">
               <Label>Department</Label>
-              <Input value={form.department} onChange={set("department")} placeholder="Engineering" />
+              <Input
+                value={form.department}
+                onChange={set("department")}
+                placeholder="Engineering"
+              />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -518,15 +502,17 @@ function JobFormDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Employment type</Label>
-              <Input value={form.employment_type} onChange={set("employment_type")} placeholder="Full-time" />
+              <Input
+                value={form.employment_type}
+                onChange={set("employment_type")}
+                placeholder="Full-time"
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Status</Label>
               <Select
                 value={form.status}
-                onValueChange={(v) =>
-                  setForm((f) => ({ ...f, status: v as "open" | "closed" }))
-                }
+                onValueChange={(v) => setForm((f) => ({ ...f, status: v as "open" | "closed" }))}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -591,7 +577,6 @@ function JobFormDialog({
   );
 }
 
-
 function ReviewDialog({
   app,
   onClose,
@@ -629,8 +614,7 @@ function ReviewDialog({
   });
 
   const decide = useMutation({
-    mutationFn: (status: "shortlisted" | "rejected") =>
-      updateApplicationStatus(app!.id, status),
+    mutationFn: (status: "shortlisted" | "rejected") => updateApplicationStatus(app!.id, status),
     onSuccess: (_d, status) => {
       toast.success(status === "shortlisted" ? "Candidate shortlisted" : "Candidate rejected");
       onChanged();
@@ -668,11 +652,7 @@ function ReviewDialog({
 
             <div className="space-y-5">
               <div className="flex flex-wrap gap-2">
-                <Button
-                  size="sm"
-                  onClick={() => screen.mutate()}
-                  disabled={screen.isPending}
-                >
+                <Button size="sm" onClick={() => screen.mutate()} disabled={screen.isPending}>
                   {screen.isPending ? (
                     <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
                   ) : (
@@ -694,7 +674,6 @@ function ReviewDialog({
                   {latestQuestions.length > 0
                     ? "Regenerate questions"
                     : "Generate interview questions"}
-
                 </Button>
                 {app.resume_path && (
                   <Button size="sm" variant="outline" onClick={downloadResume}>
@@ -714,17 +693,12 @@ function ReviewDialog({
                     )}
                   </div>
                   {app.ai_recommendation && (
-                    <p className="mt-1 text-sm font-medium text-primary">
-                      {app.ai_recommendation}
-                    </p>
+                    <p className="mt-1 text-sm font-medium text-primary">{app.ai_recommendation}</p>
                   )}
                   <p className="mt-2 text-sm text-muted-foreground">{app.ai_summary}</p>
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
                     <InfoBlock title="Key strengths" text={app.ai_strengths} />
-                    <InfoBlock
-                      title="Relevant experience"
-                      text={app.ai_experience}
-                    />
+                    <InfoBlock title="Relevant experience" text={app.ai_experience} />
                   </div>
                   {app.ai_concerns && (
                     <div className="mt-3">
@@ -734,8 +708,7 @@ function ReviewDialog({
                 </div>
               )}
 
-              {(typeof app.match_score === "number" ||
-                app.match_recommendation) && (
+              {(typeof app.match_score === "number" || app.match_recommendation) && (
                 <div className="rounded-xl border border-border bg-accent/40 p-4">
                   <div className="flex items-center justify-between">
                     <h4 className="flex items-center gap-1.5 font-semibold">
@@ -746,25 +719,16 @@ function ReviewDialog({
                     )}
                   </div>
                   {app.match_recommendation && (
-                    <Badge
-                      className={`mt-2 ${matchTone(app.match_recommendation)}`}
-                    >
+                    <Badge className={`mt-2 ${matchTone(app.match_recommendation)}`}>
                       {app.match_recommendation}
                     </Badge>
                   )}
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                    <InfoBlock
-                      title="Matching skills"
-                      text={app.matching_skills}
-                    />
-                    <InfoBlock
-                      title="Missing skills"
-                      text={app.missing_skills}
-                    />
+                    <InfoBlock title="Matching skills" text={app.matching_skills} />
+                    <InfoBlock title="Missing skills" text={app.missing_skills} />
                   </div>
                 </div>
               )}
-
 
               <Section title="Resume / experience">
                 <p className="whitespace-pre-wrap text-sm text-muted-foreground">
@@ -785,9 +749,7 @@ function ReviewDialog({
                   <div className="space-y-4">
                     {["Technical", "Behavioral", "Scenario-based"].map((cat) => {
                       const items = latestQuestions.filter(
-                        (q) =>
-                          (q.category ?? "").toLowerCase() ===
-                          cat.toLowerCase(),
+                        (q) => (q.category ?? "").toLowerCase() === cat.toLowerCase(),
                       );
                       if (items.length === 0) return null;
                       return (
@@ -826,7 +788,6 @@ function ReviewDialog({
                   </div>
                 </Section>
               )}
-
             </div>
 
             <DialogFooter className="gap-2 sm:justify-between">
@@ -867,9 +828,7 @@ function matchTone(recommendation: string | null) {
 function InfoBlock({ title, text }: { title: string; text: string | null }) {
   return (
     <div className="rounded-lg bg-card p-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        {title}
-      </p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</p>
       <p className="mt-1 whitespace-pre-wrap text-sm">{text || "—"}</p>
     </div>
   );

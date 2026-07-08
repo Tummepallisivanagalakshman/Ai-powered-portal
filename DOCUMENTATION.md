@@ -11,11 +11,11 @@ in the database and pages are protected based on role.
 
 ## 2. User Roles
 
-| Role | Capabilities |
-|------|--------------|
-| **Candidate** | View jobs, apply for jobs, upload resume, track application status |
+| Role               | Capabilities                                                                                                         |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| **Candidate**      | View jobs, apply for jobs, upload resume, track application status                                                   |
 | **HR / Recruiter** | Create/edit/delete job postings, view applications, run AI screening, shortlist/reject, generate interview questions |
-| **Hiring Manager** | View shortlisted candidates, review AI summaries, approve/reject candidates |
+| **Hiring Manager** | View shortlisted candidates, review AI summaries, approve/reject candidates                                          |
 
 Roles are stored in the `user_roles` table (never on `profiles`) and checked
 with the `has_role()` security function.
@@ -32,33 +32,37 @@ with the `has_role()` security function.
 
 ## 4. Pages / Routes
 
-| Route | Role | Description |
-|-------|------|-------------|
-| `/` | public | Landing page |
-| `/auth` | public | Login / sign up |
-| `/candidate` | Candidate | Dashboard: stats (total/active/shortlisted/rejected), available jobs, recent activity |
-| `/jobs` | Candidate | Job listings (cards) with Apply buttons |
-| `/apply/$jobId` | Candidate | **Job Application page** (full form) |
-| `/tracking` | Candidate | **Application Tracking page** — timeline + details per application |
-| `/recruiter` | Recruiter | HR dashboard: stats + Job Management (CRUD) + applications list (links to review) |
-| `/review/$applicationId` | Recruiter | **Candidate Review page** — details, resume, AI summary, match score, interview questions, HR actions |
-| `/manager` | Hiring Manager | Shortlisted candidates, AI summaries, approve/reject |
+| Route                    | Role           | Description                                                                                           |
+| ------------------------ | -------------- | ----------------------------------------------------------------------------------------------------- |
+| `/`                      | public         | Landing page                                                                                          |
+| `/auth`                  | public         | Login / sign up                                                                                       |
+| `/candidate`             | Candidate      | Dashboard: stats (total/active/shortlisted/rejected), available jobs, recent activity                 |
+| `/jobs`                  | Candidate      | Job listings (cards) with Apply buttons                                                               |
+| `/apply/$jobId`          | Candidate      | **Job Application page** (full form)                                                                  |
+| `/tracking`              | Candidate      | **Application Tracking page** — timeline + details per application                                    |
+| `/recruiter`             | Recruiter      | HR dashboard: stats + Job Management (CRUD) + applications list (links to review)                     |
+| `/review/$applicationId` | Recruiter      | **Candidate Review page** — details, resume, AI summary, match score, interview questions, HR actions |
+| `/manager`               | Hiring Manager | Shortlisted candidates, AI summaries, approve/reject                                                  |
 
 ## 5. Database Schema
 
 ### `profiles`
+
 User-facing profile data (full_name, email). Readable by the owner and by
 recruiters/managers.
 
 ### `user_roles`
+
 `(user_id, role)` — the source of truth for permissions. Read-only to the app;
 writes are blocked from clients.
 
 ### `jobs`
+
 title, company, department, location, experience_required, employment_type,
 description, requirements, skills[], status (open/closed), created_by.
 
 ### `applications`
+
 job_id, candidate_id, **full_name, email, phone, education, skills,
 experience**, resume_path, resume_text, cover_note, status
 (applied/screening/shortlisted/interview_scheduled/approved/rejected),
@@ -72,6 +76,7 @@ missing_skills, match_recommendation), manager_notes. Unique per
 > **Interview Scheduled**, approved → **Selected**, rejected → **Rejected**.
 
 ### `interview_questions`
+
 AI-generated questions linked to an application. The AI Interview Question
 Generator produces exactly 10 questions tailored to the job description, the
 candidate's profile/resume, and their skills, balanced across **Technical**,
@@ -79,8 +84,8 @@ candidate's profile/resume, and their skills, balanced across **Technical**,
 array (`{ category, question }`). HR can regenerate at any time from the review
 dialog (a new row is inserted; the latest set is shown grouped by category).
 
-
 ### Storage
+
 - `resumes` bucket (private) — candidate resume uploads (PDF).
 
 ## 6. Feature Detail: Job Application Page (`/apply/$jobId`)
@@ -144,7 +149,6 @@ dialog (a new row is inserted; the latest set is shown grouped by category).
     (a `<p>`). Moved the status badge + applied-date into a sibling `<div>` and
     gave `DialogDescription` plain text.
 
-
 - **2026-06-24** — Apply page (`/apply/$jobId`) now shows the full job
   description in all three states (before applying in the sticky job-summary
   sidebar, in the "already applied" view, and in the post-submit confirmation),
@@ -156,12 +160,10 @@ dialog (a new row is inserted; the latest set is shown grouped by category).
   migration: `REPLICA IDENTITY FULL` + `supabase_realtime` publication for the
   `jobs` and `applications` tables.
 
-
 - **2026-06-24** — Made the `AppShell` header logo (Briefcase + "TalentScreen")
   a clickable `Link` that navigates to the signed-in user's role dashboard
   (`/candidate`, `/recruiter`, or `/manager`), falling back to `/` when no role
   is resolved. Added a subtle hover state on the logo.
-
 
 - **2026-06-24** — Landing page (`/`) interactivity pass for higher engagement.
   Added reusable `Reveal` and `CountUp` components (`src/components/Reveal.tsx`):
@@ -173,7 +175,6 @@ dialog (a new row is inserted; the latest set is shown grouped by category).
   zoom on the hero image. All animations respect `prefers-reduced-motion`.
   Purely presentational — no data/logic changes.
 
-
 - **2026-06-24** — Candidate-side UI/UX refresh with motion. Added reusable
   animation/interaction utilities to `src/styles.css` (`animate-fade-up`,
   `animate-scale-in`, `animate-pop-in`, `float-soft`, `hover-lift`,
@@ -183,7 +184,6 @@ dialog (a new row is inserted; the latest set is shown grouped by category).
   staggered entrance animations, hover-lift cards, animated apply buttons, and a
   pulsing current-stage node on the tracking timeline. Purely presentational —
   no data/logic changes.
-
 
 - **2026-06-24** — Added an AI assistant chatbot available to every role across
   the portal. A floating launcher (`src/components/ChatWidget.tsx`) is mounted in
@@ -195,7 +195,6 @@ dialog (a new row is inserted; the latest set is shown grouped by category).
   via Lovable AI. The system prompt is tailored per role and enforces fair,
   unbiased hiring guidance. Conversations are single-session (not persisted).
 
-
 - **2026-06-24** — Resume auto-fill on the application page (`/apply/$jobId`):
   uploading a PDF resume now extracts its text in the browser (`src/lib/pdf.ts`
   via `pdfjs-dist`) and uses AI (`parseResumeFields` in `ai.functions.ts`) to
@@ -203,13 +202,11 @@ dialog (a new row is inserted; the latest set is shown grouped by category).
   Already-entered values are preserved; a progress indicator shows while
   parsing and submit is disabled during it.
 
-
 - **2026-06-24** — Disabled leaked-password protection (HIBP) in auth config so
   common passwords are no longer rejected at sign-up (users kept hitting the
   "password appeared in a data breach" 422). Removed the breach-rejection hint
   from the sign-up form (now just "Use at least 6 characters"). Note: this
   weakens password security; re-enable HIBP if stronger protection is wanted.
-
 
 - **2026-06-24** — SEO/a11y fixes: added an `<h2>` heading to the homepage
   Features section; associated the sign-up role `Select` with its `Label`
@@ -217,7 +214,6 @@ dialog (a new row is inserted; the latest set is shown grouped by category).
   (title, description, og:title, og:description) plus `robots: noindex,nofollow`
   to all authenticated dashboard routes (jobs, candidate, recruiter, manager,
   tracking, dashboard, apply, review) so they no longer share the root title.
-
 
 - **2026-06-24** — Fixed confusing signup failures. Root cause: leaked-password
   protection (HIBP) is enabled, so breached/common passwords (e.g. "Test123456")
@@ -227,14 +223,12 @@ dialog (a new row is inserted; the latest set is shown grouped by category).
   surfaces a clear message ("password appeared in a data breach…" /
   "account already exists") and shows a password-strength hint under the field.
 
-
 - **2026-06-24** — `/auth` visual refresh ("Modern atmospheric split"
   direction): rebuilt the brand panel with layered indigo/violet mesh glows over
   a deep dark base and a "Precision hiring powered by AI." headline, and
   restyled the form panel with pill-style tabs, uppercase tracked labels,
   rounded-xl inputs/select, and a taller primary CTA. All existing auth logic
   (login/signup tabs, role select, password show/hide, busy state) preserved.
-
 
 - **2026-06-24** — Full UI/UX redesign: adopted a cool, minimalist design
   language. New typography (Space Grotesk display + DM Sans body), a refined
@@ -250,19 +244,16 @@ dialog (a new row is inserted; the latest set is shown grouped by category).
   wired into the landing header, auth page, and the authenticated AppShell
   header. Also made the AppShell sign-out label collapse to an icon on mobile.
 
-
 - **2026-06-24** — Auth redesign: rebuilt `/auth` as a modern split-screen
   layout — a branded gradient panel (logo, headline, AI feature highlights) on
   the left and a clean form on the right; collapses to a single centered column
   on mobile. Added a `--shadow-elegant` token.
-
 
 - **2026-06-24** — Auth UX: added a "Back to home" link at the top of the
   `/auth` page.
 
 - **2026-06-24** — Auth UX: added a show/hide password toggle (eye icon) to
   both the sign-in and create-account password fields.
-
 
 - **2026-06-24** — SEO: added sitemap entries for `/candidate`, `/dashboard`,
   `/jobs`, `/manager`, and `/recruiter` to address the sitemap route coverage
@@ -271,14 +262,12 @@ dialog (a new row is inserted; the latest set is shown grouped by category).
 - **2026-06-24** — SEO: fixed skipped heading level on the jobs page
   (job titles `h3` → `h2` to follow the AppShell `h1`).
 
-
 - **2026-06-24** — SEO fixes: added an H1 to the auth page and corrected the
   apply page heading order; gave the homepage and auth page unique
   titles/descriptions, self-referencing canonical + og:url, and unique og
   tags; added WebSite + Organization JSON-LD to the root route; added a
   `Sitemap:` line to robots.txt and absolute URLs in the sitemap; added
   `public/llms.txt`.
-
 
 - **2026-06-24** — Added dedicated Candidate Review page
   (`/review/$applicationId`): shows candidate details, resume (PDF + text),
@@ -287,12 +276,10 @@ dialog (a new row is inserted; the latest set is shown grouped by category).
   application status automatically. The HR dashboard applications list now
   links to this page.
 
-
 - **2026-06-24** — Enhanced AI Interview Question Generator: now generates 10
   questions based on job description, candidate profile, and skills, balanced
   across Technical, Behavioral, and Scenario-based categories; HR can regenerate
   questions from the review dialog, where they display grouped by category.
-
 
 - **2026-06-24** — Added AI Job Match Scoring: candidate profile + resume is
   compared against the job, producing a match score (0–100), matching skills,
@@ -301,13 +288,11 @@ dialog (a new row is inserted; the latest set is shown grouped by category).
   columns. Generated at apply time and refreshed by HR's "Run AI screening";
   results shown in the HR dashboard (list badge + review dialog "AI job match").
 
-
 - **2026-06-24** — Job listings: clicking a job title or "View details" now opens
   a full job details dialog (company, department, location, experience,
   employment type, full description, requirements, and all required skills) with
   an "Apply now" action, so candidates can review complete role details before
   applying.
-
 
 - **2026-06-24** — Added AI Resume Summary: candidates' resumes are analyzed at
   apply time generating candidate summary, key strengths, relevant experience,

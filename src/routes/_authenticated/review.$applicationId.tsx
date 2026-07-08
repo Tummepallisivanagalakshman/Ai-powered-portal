@@ -56,9 +56,7 @@ export const Route = createFileRoute("/_authenticated/review/$applicationId")({
   ),
   errorComponent: () => (
     <AppShell title="Candidate Review">
-      <p className="text-sm text-muted-foreground">
-        Could not load this application.
-      </p>
+      <p className="text-sm text-muted-foreground">Could not load this application.</p>
       <Link to="/recruiter" className="mt-3 inline-block text-sm text-primary">
         Back to dashboard
       </Link>
@@ -108,8 +106,7 @@ function ReviewPage() {
   });
 
   const decide = useMutation({
-    mutationFn: (status: ApplicationStatus) =>
-      updateApplicationStatus(applicationId, status),
+    mutationFn: (status: ApplicationStatus) => updateApplicationStatus(applicationId, status),
     onSuccess: (_d, status) => {
       const msg: Record<string, string> = {
         shortlisted: "Candidate shortlisted",
@@ -178,11 +175,7 @@ function ReviewPage() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button
-              size="sm"
-              onClick={() => screen.mutate()}
-              disabled={screen.isPending}
-            >
+            <Button size="sm" onClick={() => screen.mutate()} disabled={screen.isPending}>
               {screen.isPending ? (
                 <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
               ) : (
@@ -201,9 +194,7 @@ function ReviewPage() {
               ) : (
                 <Sparkles className="mr-1.5 h-4 w-4" />
               )}
-              {latestQuestions.length > 0
-                ? "Regenerate questions"
-                : "Generate interview questions"}
+              {latestQuestions.length > 0 ? "Regenerate questions" : "Generate interview questions"}
             </Button>
           </div>
         </div>
@@ -213,11 +204,7 @@ function ReviewPage() {
           <div className="grid gap-3 sm:grid-cols-2">
             <Detail icon={Mail} label="Email" value={app.candidate?.email ?? app.email} />
             <Detail icon={Phone} label="Phone" value={app.phone} />
-            <Detail
-              icon={GraduationCap}
-              label="Education"
-              value={app.education}
-            />
+            <Detail icon={GraduationCap} label="Education" value={app.education} />
             <Detail icon={Target} label="Skills" value={app.skills} />
           </div>
           {app.experience && (
@@ -233,11 +220,7 @@ function ReviewPage() {
         {/* Resume */}
         <Card title="Resume">
           {app.resume_path ? (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => downloadResume(app)}
-            >
+            <Button size="sm" variant="outline" onClick={() => downloadResume(app)}>
               <Download className="mr-1.5 h-4 w-4" /> Open resume (PDF)
             </Button>
           ) : (
@@ -267,23 +250,16 @@ function ReviewPage() {
             <>
               <div className="flex items-center justify-between">
                 {app.ai_recommendation && (
-                  <p className="text-sm font-medium text-primary">
-                    {app.ai_recommendation}
-                  </p>
+                  <p className="text-sm font-medium text-primary">{app.ai_recommendation}</p>
                 )}
                 {typeof app.ai_score === "number" && (
                   <Badge className="text-sm">{app.ai_score}/100</Badge>
                 )}
               </div>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {app.ai_summary}
-              </p>
+              <p className="mt-2 text-sm text-muted-foreground">{app.ai_summary}</p>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <InfoBlock title="Key strengths" text={app.ai_strengths} />
-                <InfoBlock
-                  title="Relevant experience"
-                  text={app.ai_experience}
-                />
+                <InfoBlock title="Relevant experience" text={app.ai_experience} />
               </div>
               {app.ai_concerns && (
                 <div className="mt-3">
@@ -325,7 +301,9 @@ function ReviewPage() {
         </Card>
 
         {/* Interview questions */}
-        <Card title={`Interview questions${latestQuestions.length ? ` (${latestQuestions.length})` : ""}`}>
+        <Card
+          title={`Interview questions${latestQuestions.length ? ` (${latestQuestions.length})` : ""}`}
+        >
           {latestQuestions.length > 0 ? (
             <div className="space-y-4">
               {["Technical", "Behavioral", "Scenario-based"].map((cat) => {
@@ -368,8 +346,7 @@ function ReviewPage() {
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
-              No interview questions yet. Generate a set to prepare for the
-              interview.
+              No interview questions yet. Generate a set to prepare for the interview.
             </p>
           )}
         </Card>
@@ -386,9 +363,7 @@ function ReviewPage() {
             <Button
               variant="outline"
               onClick={() => decide.mutate("interview_scheduled")}
-              disabled={
-                decide.isPending || app.status === "interview_scheduled"
-              }
+              disabled={decide.isPending || app.status === "interview_scheduled"}
             >
               <CalendarClock className="mr-1.5 h-4 w-4" /> Move to interview
             </Button>
@@ -441,9 +416,7 @@ function Detail({
       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
       <div className="min-w-0">
         <Label>{label}</Label>
-        <p className="text-sm text-muted-foreground">
-          {value && value.trim() ? value : "—"}
-        </p>
+        <p className="text-sm text-muted-foreground">{value && value.trim() ? value : "—"}</p>
       </div>
     </div>
   );
@@ -452,9 +425,7 @@ function Detail({
 function InfoBlock({ title, text }: { title: string; text: string | null }) {
   return (
     <div className="rounded-lg bg-accent/40 p-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        {title}
-      </p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</p>
       <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">
         {text && text.trim() ? text : "—"}
       </p>

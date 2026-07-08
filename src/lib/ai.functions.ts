@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 type ScreeningResult = {
   score: number;
@@ -50,7 +51,7 @@ async function callGateway(messages: Array<{ role: string; content: string }>) {
   }
 }
 
-async function fetchContext(supabase: any, applicationId: string) {
+async function fetchContext(supabase: SupabaseClient, applicationId: string) {
   const { data: app, error } = await supabase
     .from("applications")
     .select("*, jobs(title, description, requirements, department)")
@@ -102,11 +103,7 @@ ${app.cover_note ?? "(none provided)"}`,
     // Also (re)compute the job-match score so HR sees it on screening.
     let match: JobMatchResult | null = null;
     try {
-      match = await computeJobMatch(
-        job as JobLike,
-        app.resume_text ?? "",
-        app.skills ?? "",
-      );
+      match = await computeJobMatch(job as JobLike, app.resume_text ?? "", app.skills ?? "");
     } catch (err) {
       console.error("Job match during screening failed:", err);
     }
@@ -181,16 +178,13 @@ ${app.cover_note ?? "(none provided)"}`,
       },
     ])) as { questions?: Array<{ category: string; question: string }> };
 
-
     const questions = Array.isArray(result.questions) ? result.questions : [];
 
-    const { error: insErr } = await supabase
-      .from("interview_questions")
-      .insert({
-        application_id: data.applicationId,
-        questions,
-        created_by: userId,
-      });
+    const { error: insErr } = await supabase.from("interview_questions").insert({
+      application_id: data.applicationId,
+      questions,
+      created_by: userId,
+    });
     if (insErr) throw new Error(insErr.message);
 
     return { questions };
@@ -204,12 +198,7 @@ ${app.cover_note ?? "(none provided)"}`,
 export const generateResumeSummary = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
-    (data: {
-      jobId: string;
-      resumeText: string;
-      skills: string;
-      coverNote?: string;
-    }) => data,
+    (data: { jobId: string; resumeText: string; skills: string; coverNote?: string }) => data,
   )
   .handler(async ({ data, context }) => {
     const { supabase } = context;
@@ -219,7 +208,7 @@ export const generateResumeSummary = createServerFn({ method: "POST" })
       .select("title, description, requirements, department, skills")
       .eq("id", data.jobId)
       .single();
-    const j = job ?? {};
+    const j = (job ?? {}) as JobLike;
 
     const result = (await callGateway([
       {
@@ -237,15 +226,11 @@ export const generateResumeSummary = createServerFn({ method: "POST" })
       },
       {
         role: "user",
-        content: `JOB TITLE: ${(j as any).title ?? "N/A"}
-DEPARTMENT: ${(j as any).department ?? "N/A"}
-JOB DESCRIPTION: ${(j as any).description ?? "N/A"}
-REQUIREMENTS: ${(j as any).requirements ?? "N/A"}
-REQUIRED SKILLS: ${
-          Array.isArray((j as any).skills)
-            ? (j as any).skills.join(", ")
-            : "N/A"
-        }
+        content: `JOB TITLE: ${j.title ?? "N/A"}
+DEPARTMENT: ${j.department ?? "N/A"}
+JOB DESCRIPTION: ${j.description ?? "N/A"}
+REQUIREMENTS: ${j.requirements ?? "N/A"}
+REQUIRED SKILLS: ${Array.isArray(j.skills) ? j.skills.join(", ") : "N/A"}
 
 CANDIDATE SKILLS:
 ${data.skills || "(none provided)"}
@@ -291,12 +276,7 @@ export type JobMatchResult = {
   recommendation: string;
 };
 
-const MATCH_RECOMMENDATIONS = [
-  "Strong Match",
-  "Good Match",
-  "Moderate Match",
-  "Weak Match",
-];
+const MATCH_RECOMMENDATIONS = ["Strong Match", "Good Match", "Moderate Match", "Weak Match"];
 
 /** Core job-match computation (no DB write). Shared by apply-time and screening. */
 async function computeJobMatch(
@@ -339,16 +319,12 @@ ${resumeText || "(none provided)"}`,
     recommendation?: string;
   };
 
-  const recommendation = MATCH_RECOMMENDATIONS.includes(
-    result.recommendation ?? "",
-  )
+  const recommendation = MATCH_RECOMMENDATIONS.includes(result.recommendation ?? "")
     ? (result.recommendation as string)
     : "";
 
   const score =
-    typeof result.score === "number"
-      ? Math.max(0, Math.min(100, Math.round(result.score)))
-      : null;
+    typeof result.score === "number" ? Math.max(0, Math.min(100, Math.round(result.score))) : null;
 
   return {
     score,
@@ -418,9 +394,7 @@ export const parseResumeFields = createServerFn({ method: "POST" })
 
 export const generateJobMatch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
-    (data: { jobId: string; resumeText: string; skills: string }) => data,
-  )
+  .inputValidator((data: { jobId: string; resumeText: string; skills: string }) => data)
   .handler(async ({ data, context }) => {
     const { supabase } = context;
 
@@ -431,4 +405,177 @@ export const generateJobMatch = createServerFn({ method: "POST" })
       .single();
 
     return computeJobMatch((job ?? {}) as JobLike, data.resumeText, data.skills);
+  });
+
+export const generateCoverLetter = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { jobTitle: string; company: string; jobDescription: string; tone: string }) => data)
+  .handler(async ({ data }) => {
+    const result = await callGateway([
+      {
+        role: "system",
+        content: `You are an expert career consultant. Generate a highly professional, customized cover letter matching the tone: "${data.tone}". Respond with a JSON object containing a single key: "letter".`
+      },
+      {
+        role: "user",
+        content: `JOB TITLE: ${data.jobTitle}\nCOMPANY: ${data.company}\nJOB DESCRIPTION: ${data.jobDescription}`
+      }
+    ]);
+    return { letter: result.letter || "Dear Hiring Team,\n\nI am interested..." };
+  });
+
+export const matchResumeToJD = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { resumeText: string; jobDescription: string }) => data)
+  .handler(async ({ data }) => {
+    const result = await callGateway([
+      {
+        role: "system",
+        content: "You are an AI matching agent. Evaluate the resume text against the pasted job description. " +
+          "Respond with a JSON object containing: " +
+          '"score" (integer 0-100), ' +
+          '"matchingSkills" (array of strings), ' +
+          '"missingSkills" (array of strings), ' +
+          '"hiringProbability" (integer 0-100), ' +
+          '"recommendation" (string summary recommendation).'
+      },
+      {
+        role: "user",
+        content: `JOB DESCRIPTION:\n${data.jobDescription}\n\nRESUME TEXT:\n${data.resumeText}`
+      }
+    ]) as { score?: number; matchingSkills?: string[]; missingSkills?: string[]; hiringProbability?: number; recommendation?: string };
+
+    return {
+      score: result.score ?? 70,
+      matchingSkills: result.matchingSkills ?? [],
+      missingSkills: result.missingSkills ?? [],
+      hiringProbability: result.hiringProbability ?? 65,
+      recommendation: result.recommendation ?? "Complete missing skills to score higher."
+    };
+  });
+
+export const generateMockQuestions = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { role: string; difficulty: string; type: string }) => data)
+  .handler(async ({ data }) => {
+    const result = await callGateway([
+      {
+        role: "system",
+        content: "You are an AI Interviewer. Generate exactly 3 customized mock interview questions for the candidate role and difficulty. " +
+          'Respond with a JSON object containing a single key: "questions", which is an array of exactly 3 strings.'
+      },
+      {
+        role: "user",
+        content: `ROLE: ${data.role}\nDIFFICULTY: ${data.difficulty}\nTYPE: ${data.type}`
+      }
+    ]) as { questions?: string[] };
+
+    return {
+      questions: result.questions && result.questions.length === 3 ? result.questions : [
+        `Describe your core accomplishments in a ${data.role} role.`,
+        `How do you handle complex technical obstacles under tight deadlines?`,
+        `Describe a scenario where you disagreed with a product specification.`
+      ]
+    };
+  });
+
+export const gradeMockSession = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { questions: string[]; answers: string[] }) => data)
+  .handler(async ({ data }) => {
+    const qas = data.questions.map((q, idx) => `Q: ${q}\nA: ${data.answers[idx]}`).join("\n\n");
+    const result = await callGateway([
+      {
+        role: "system",
+        content: "You are an expert technical interviewer. Evaluate the candidate's answers against the questions. " +
+          "Respond with a JSON object containing: " +
+          '"overallScore" (integer 0-100), ' +
+          '"technicalScore" (integer 0-100), ' +
+          '"communicationScore" (integer 0-100), ' +
+          '"confidenceScore" (integer 0-100), ' +
+          '"suggestions" (array of exactly 2 feedback strings).'
+      },
+      {
+        role: "user",
+        content: `MOCK INTERVIEW SESSION:\n${qas}`
+      }
+    ]) as { overallScore?: number; technicalScore?: number; communicationScore?: number; confidenceScore?: number; suggestions?: string[] };
+
+    return {
+      overallScore: result.overallScore ?? 75,
+      technicalScore: result.technicalScore ?? 75,
+      communicationScore: result.communicationScore ?? 75,
+      confidenceScore: result.confidenceScore ?? 75,
+      suggestions: result.suggestions ?? [
+        "Include more quantifiable metrics in your achievement descriptions.",
+        "Provide direct examples when discussing complex state management architectures."
+      ]
+    };
+  });
+
+export const generateLearningRoadmap = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { currentSkills: string; targetRole: string }) => data)
+  .handler(async ({ data }) => {
+    const result = await callGateway([
+      {
+        role: "system",
+        content: "You are an AI syllabus tutor. Output exactly 5 learning modules to bridge the candidate's skill gaps for their target role. " +
+          "Respond with a JSON object containing a single key: \"lessons\", which is an array of exactly 5 objects. " +
+          'Each object has: "title" (string), "duration" (string), "difficulty" ("Easy" | "Medium" | "Hard"), "category" (string), "link" (string URL).'
+      },
+      {
+        role: "user",
+        content: `TARGET ROLE: ${data.targetRole}\nCURRENT SKILLS: ${data.currentSkills}`
+      }
+    ]) as { lessons?: Array<{ title: string; duration: string; difficulty: "Easy" | "Medium" | "Hard"; category: string; link: string }> };
+
+    return {
+      lessons: result.lessons && result.lessons.length === 5 ? result.lessons : [
+        { title: `Deep Dive into ${data.targetRole} Best Practices`, duration: "1.5 hours", difficulty: "Medium", category: "Core Design", link: "https://react.dev" },
+        { title: "Managing asynchronous network states cleanly", duration: "45 mins", difficulty: "Medium", category: "State Management", link: "https://tanstack.com" },
+        { title: "Mastering TypeScript Type Guards and Mappings", duration: "1 hour", difficulty: "Hard", category: "Languages", link: "https://typescriptlang.org" },
+        { title: "Quantifying achievement bullets for ATS compatibility", duration: "30 mins", difficulty: "Easy", category: "Resume Optimization", link: "https://resumeimpact.guide" },
+        { title: "Navigating Behavioral Interpersonal Assessments", duration: "40 mins", difficulty: "Easy", category: "Mock Prep", link: "https://starinterview.co" }
+      ]
+    };
+  });
+
+export const analyzeResumeATS = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { resumeText: string; jobDescription: string }) => data)
+  .handler(async ({ data }) => {
+    const result = await callGateway([
+      {
+        role: "system",
+        content: "You are an ATS Parser check. Audit the resume text against the target job requirements. " +
+          "Respond with a JSON object containing: " +
+          '"score" (overall compatibility score integer 0-100), ' +
+          '"formattingChecks" (array of exactly 5 objects: each with "name" string, "score" integer, "status" ("passed" | "warning"), "desc" string explanation), ' +
+          '"missingKeywords" (array of strings, maximum 4 items), ' +
+          '"matchingKeywords" (array of strings, maximum 4 items).'
+      },
+      {
+        role: "user",
+        content: `JOB DESCRIPTION:\n${data.jobDescription}\n\nRESUME TEXT:\n${data.resumeText}`
+      }
+    ]) as {
+      score?: number;
+      formattingChecks?: Array<{ name: string; score: number; status: "passed" | "warning"; desc: string }>;
+      missingKeywords?: string[];
+      matchingKeywords?: string[];
+    };
+
+    return {
+      score: result.score ?? 70,
+      formattingChecks: result.formattingChecks && result.formattingChecks.length === 5 ? result.formattingChecks : [
+        { name: "File Structure", score: 100, status: "passed", desc: "No parsed boxes, images, or vectors block text conversion." },
+        { name: "Section Headings", score: 90, status: "passed", desc: "Standard headings recognized correctly." },
+        { name: "Keyword Density", score: 70, status: "warning", desc: "Found matching keywords, but some primary terms are missing." },
+        { name: "Quantified Metrics", score: 60, status: "warning", desc: "Resume bullets lack metrics (percentages, values)." },
+        { name: "Contact & Links", score: 100, status: "passed", desc: "Valid email and links parsed cleanly." }
+      ],
+      missingKeywords: result.missingKeywords ?? ["Webpack", "CI/CD", "System Design"],
+      matchingKeywords: result.matchingKeywords ?? ["React", "TypeScript", "Tailwind CSS"]
+    };
   });

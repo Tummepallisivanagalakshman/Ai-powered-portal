@@ -18,27 +18,27 @@ After signing in, every user is routed to a dashboard tailored to their role. Ro
 
 ## User Roles
 
-| Role | Capabilities |
-|------|--------------|
-| **Candidate** | Browse jobs, apply, upload resume, track application status |
-| **Recruiter** | Create/edit/delete job postings, view applications, run AI screening, shortlist/reject, generate interview questions |
-| **Hiring Manager** | Review shortlisted candidates and AI summaries, approve/reject |
+| Role               | Capabilities                                                                                                         |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| **Candidate**      | Browse jobs, apply, upload resume, track application status                                                          |
+| **Recruiter**      | Create/edit/delete job postings, view applications, run AI screening, shortlist/reject, generate interview questions |
+| **Hiring Manager** | Review shortlisted candidates and AI summaries, approve/reject                                                       |
 
 Roles live in the `user_roles` table (never on `profiles`) and are checked with a `has_role()` security function.
 
 ## Routes
 
-| Route | Access | Description |
-|-------|--------|-------------|
-| `/` | Public | Landing page |
-| `/auth` | Public | Sign in / create account |
-| `/candidate` | Candidate | Dashboard with stats, available jobs, recent activity |
-| `/jobs` | Candidate | Job listings with apply buttons |
-| `/apply/$jobId` | Candidate | Job application form |
-| `/tracking` | Candidate | Application tracking timeline |
-| `/recruiter` | Recruiter | Job management (CRUD) + applications list |
-| `/review/$applicationId` | Recruiter | Candidate review: resume, AI summary, match score, interview questions |
-| `/manager` | Hiring Manager | Shortlisted candidates, AI summaries, approve/reject |
+| Route                    | Access         | Description                                                            |
+| ------------------------ | -------------- | ---------------------------------------------------------------------- |
+| `/`                      | Public         | Landing page                                                           |
+| `/auth`                  | Public         | Sign in / create account                                               |
+| `/candidate`             | Candidate      | Dashboard with stats, available jobs, recent activity                  |
+| `/jobs`                  | Candidate      | Job listings with apply buttons                                        |
+| `/apply/$jobId`          | Candidate      | Job application form                                                   |
+| `/tracking`              | Candidate      | Application tracking timeline                                          |
+| `/recruiter`             | Recruiter      | Job management (CRUD) + applications list                              |
+| `/review/$applicationId` | Recruiter      | Candidate review: resume, AI summary, match score, interview questions |
+| `/manager`               | Hiring Manager | Shortlisted candidates, AI summaries, approve/reject                   |
 
 ## Tech Stack
 
@@ -94,13 +94,13 @@ This creates the core tables: `profiles`, `user_roles`, `jobs`, `applications`, 
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `bun run dev` | Start the development server |
-| `bun run build` | Build for production |
+| Command           | Description                  |
+| ----------------- | ---------------------------- |
+| `bun run dev`     | Start the development server |
+| `bun run build`   | Build for production         |
 | `bun run preview` | Preview the production build |
-| `bun run lint` | Run ESLint |
-| `bun run format` | Format with Prettier |
+| `bun run lint`    | Run ESLint                   |
+| `bun run format`  | Format with Prettier         |
 
 ## Project Structure
 
