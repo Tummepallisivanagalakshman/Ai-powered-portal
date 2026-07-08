@@ -1,113 +1,113 @@
-# TalentScreen — AI Hiring & Candidate Screening Portal
+# AI Career Success Portal (TalentScreen)
 
-A role-based hiring platform where candidates apply for jobs, recruiters screen applicants with AI, and hiring managers make confident decisions — all in one focused portal.
+A state-of-the-art, responsive, AI-powered Career Success Portal combined with role-based candidate screening. Candidates can optimize resumes, practice mock interviews, generate letters, and track pipelines while recruiters and managers screen applicants.
 
 ![Stack](https://img.shields.io/badge/React-19-61dafb) ![Stack](https://img.shields.io/badge/TanStack_Start-1.x-ff4154) ![Stack](https://img.shields.io/badge/Supabase-Backend-3ecf8e) ![Stack](https://img.shields.io/badge/Tailwind-v4-38bdf8)
 
-## Overview
+---
 
-After signing in, every user is routed to a dashboard tailored to their role. Roles are stored in the database and every protected page is gated server-side, so each person only sees what they're allowed to.
+## 🚀 Key Features
 
-## Features
+### 🌟 Candidate Career Workspace
+- **ATS Resume Analyzer:** Instantly audits resumes against target job descriptions for formatting guidelines, missing keywords, and formatting density checkmarks.
+- **ATS Score Auditor:** Detailed score parser checking headings, sections, links, and density values.
+- **Job Match Analyzer:** Compares resumes against arbitrary job descriptions to estimate compatibility.
+- **AI Mock Interview Simulator:** Sets customizable roles, difficulties, and types, prompting 3 tailored questions with active timers, followed by scoring grades (Technical, Communication, Confidence).
+- **Personalized Learning Roadmaps:** Dynamically bridges skill gaps by generating 5 syllabus lessons based on target roles.
+- **Cover Letter Generator:** Generates professional, copyable drafts using selected tone templates.
+- **Interactive Resume Builder:** Supports building resumes across 7 key sections (Personal, Education, Skills, Experience, Projects, Certifications, Achievements) with live preview formatting.
+- **AI Career Chatbot:** Real-time floating and full-page career helper leveraging Gemini context-aware conversations.
+- **Job Tracker Kanban:** Visual pipeline manager tracking job stages (Interested, Applied, Interview, Offer, Rejected) persisted in `localStorage`.
 
-- **Role-based workspaces** — separate dashboards for candidates, recruiters, and hiring managers
-- **AI candidate screening** — resume parsing, fit scoring, strengths/concerns summaries, and interview-question generation (Google Gemini)
-- **End-to-end pipeline** — post a job → apply → screen → shortlist → hire
-- **Resume upload & auto-fill** — PDF resumes are parsed to pre-fill the application form
-- **Secure auth** — email/password sign-in with row-level security on all data
+### 🛡️ Recruiter & Hiring Manager Screenings
+- **AI Candidate Screening:** Automatically evaluates applicant profiles, returning match scores, strengths/concerns, and interview questions.
+- **Role-Based Workspaces:** Secure portals for Candidate, Recruiter, and Hiring Manager environments, gated server-side via Supabase.
 
-## User Roles
+---
 
-| Role               | Capabilities                                                                                                         |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| **Candidate**      | Browse jobs, apply, upload resume, track application status                                                          |
-| **Recruiter**      | Create/edit/delete job postings, view applications, run AI screening, shortlist/reject, generate interview questions |
-| **Hiring Manager** | Review shortlisted candidates and AI summaries, approve/reject                                                       |
+## 🛣️ Core Routes
 
-Roles live in the `user_roles` table (never on `profiles`) and are checked with a `has_role()` security function.
+| Route | Access | Description |
+| :--- | :--- | :--- |
+| `/` | Public | Landing page with animated illustrations, FAQ, and footer |
+| `/auth` | Public | Sign in / sign up credentials validator |
+| `/candidate` | Candidate | User Dashboard with weekly gauges, stats, and charts |
+| `/resume-analyzer` | Candidate | Drag-and-drop resume auditor |
+| `/ats-score` | Candidate | Granite parse checker |
+| `/job-match` | Candidate | JD comparator and recommendation reporter |
+| `/mock-interview` | Candidate | AI grade questions and grader panel |
+| `/roadmap` | Candidate | AI learning roadmap compiler |
+| `/cover-letter` | Candidate | Draft generator |
+| `/resume-builder` | Candidate | Form inputs and live formatted print preview |
+| `/career-chat` | Candidate | Chatbot client with suggested pills |
+| `/job-tracker` | Candidate | Kanban tracker pipeline board |
+| `/reports` | Candidate | Weekly history reports |
+| `/profile` | Candidate | Location, preferences, and skills updater |
+| `/settings` | Candidate | Notifications, privacy, and account settings |
+| `/recruiter` | Recruiter | Post and list vacancies, review applications |
+| `/review/$applicationId` | Recruiter | Detailed screening dashboard & questions generator |
+| `/manager` | Hiring Manager | Shortlisted reviews and recruiter notes decider |
 
-## Routes
+---
 
-| Route                    | Access         | Description                                                            |
-| ------------------------ | -------------- | ---------------------------------------------------------------------- |
-| `/`                      | Public         | Landing page                                                           |
-| `/auth`                  | Public         | Sign in / create account                                               |
-| `/candidate`             | Candidate      | Dashboard with stats, available jobs, recent activity                  |
-| `/jobs`                  | Candidate      | Job listings with apply buttons                                        |
-| `/apply/$jobId`          | Candidate      | Job application form                                                   |
-| `/tracking`              | Candidate      | Application tracking timeline                                          |
-| `/recruiter`             | Recruiter      | Job management (CRUD) + applications list                              |
-| `/review/$applicationId` | Recruiter      | Candidate review: resume, AI summary, match score, interview questions |
-| `/manager`               | Hiring Manager | Shortlisted candidates, AI summaries, approve/reject                   |
-
-## Tech Stack
+## 🛠️ Tech Stack
 
 - **Framework:** [TanStack Start](https://tanstack.com/start) (React 19, SSR) on [Vite](https://vitejs.dev)
-- **Backend:** [Supabase](https://supabase.com) — Postgres, Auth, Storage
+- **Backend:** [Supabase](https://supabase.com) — Postgres Database, Auth, Storage
 - **Styling:** Tailwind CSS v4 + Radix UI primitives
-- **AI:** Google Gemini for screening, resume parsing, and the chat assistant
-- **Data:** TanStack Query, React Hook Form, Zod
-- **Runtime:** Bun
+- **AI Engine:** Google Gemini (via Lovable AI Gateway)
+- **Visuals:** Recharts tracking graphs
 
-## Getting Started
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
+- Node.js / Yarn / Bun installed
+- A Supabase project set up
 
-- [Bun](https://bun.sh) installed
-- A [Supabase](https://supabase.com) project
-
-### Installation
-
+### Installation & Run
 ```bash
 # Install dependencies
-bun install
+yarn install
 
 # Start the dev server (http://localhost:5000)
-bun run dev
+yarn dev
+
+# Compile for production
+yarn build
 ```
 
-### Environment Variables
-
+### Environment Variables (.env)
 Create the following variables in your environment (do **not** commit secrets):
-
-```bash
+```env
 VITE_SUPABASE_URL=https://<your-project-ref>.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=<your-publishable-key>
 VITE_SUPABASE_PROJECT_ID=<your-project-ref>
 
-# Server-side (same values, used during SSR)
+# Server-side environment
 SUPABASE_URL=https://<your-project-ref>.supabase.co
 SUPABASE_PUBLISHABLE_KEY=<your-publishable-key>
 SUPABASE_PROJECT_ID=<your-project-ref>
 ```
 
 ### Database Setup
-
 Apply the SQL migrations in `supabase/migrations/` to your Supabase project (in chronological order). They create the schema, row-level security policies, triggers, and the `resumes` storage bucket.
 
 ```bash
 # Example: apply migrations with psql
 for f in supabase/migrations/*.sql; do psql "$SUPABASE_DB_URL" -f "$f"; done
 ```
-
 This creates the core tables: `profiles`, `user_roles`, `jobs`, `applications`, and `interview_questions`.
 
-## Scripts
+---
 
-| Command           | Description                  |
-| ----------------- | ---------------------------- |
-| `bun run dev`     | Start the development server |
-| `bun run build`   | Build for production         |
-| `bun run preview` | Preview the production build |
-| `bun run lint`    | Run ESLint                   |
-| `bun run format`  | Format with Prettier         |
-
-## Project Structure
+## 📁 Project Structure
 
 ```
 src/
 ├── routes/              # File-based routes (TanStack Router)
-│   ├── _authenticated/  # Role-gated pages
+│   ├── _authenticated/  # Role-gated and workspace pages
 │   └── ...
 ├── components/          # UI components (incl. Radix-based ui/ kit)
 ├── integrations/
@@ -118,13 +118,16 @@ supabase/
 └── migrations/          # Database schema & policies
 ```
 
-## Security
+---
+
+## 🔒 Security
 
 - All data access is protected by Supabase Row-Level Security (RLS) policies — users can only read and write what their role permits.
 - Permissions are enforced server-side via a `has_role()` security function; roles are never stored on client-editable tables.
-- Dependencies are kept patched against known CVEs (audited via `npm audit` / `bun`).
 - Secrets (Supabase keys, AI credentials) are supplied through environment variables and are never committed to the repository.
 
-## License
+---
+
+## 📄 License
 
 This project is provided as-is for the repository owner.
