@@ -1,7 +1,6 @@
 import os
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from sqlalchemy.orm import Session
-from app.database import SessionLocal
 from app.dependencies import get_db, get_current_user
 from app.models.models import User, Resume
 from app.schemas.resume import ResumeResponse

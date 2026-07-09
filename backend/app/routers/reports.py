@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.database import SessionLocal
 from app.dependencies import get_db, get_current_user
 from app.models.models import User, Report
 from pydantic import BaseModel
