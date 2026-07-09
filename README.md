@@ -2,7 +2,7 @@
 
 A state-of-the-art, responsive, AI-powered Career Success Portal combined with role-based candidate screening. Candidates can optimize resumes, practice mock interviews, generate letters, and track pipelines while recruiters and managers screen applicants.
 
-The application has been migrated from a frontend-only Supabase design to a decoupled architecture consisting of a **React 19 Frontend** and a **Python FastAPI Backend** with JWT authentication and relational Postgres/SQLite persistence.
+The application has been migrated from a frontend-only Supabase design to a decoupled architecture consisting of a **React 19 Frontend** and a **Python FastAPI Backend** with JWT authentication and live **Supabase PostgreSQL** database persistence.
 
 ![Stack](https://img.shields.io/badge/React-19-61dafb) ![Stack](https://img.shields.io/badge/FastAPI-0.111-009688) ![Stack](https://img.shields.io/badge/SQLAlchemy-2.x-red) ![Stack](https://img.shields.io/badge/Alembic-1.x-blue) ![Stack](https://img.shields.io/badge/Tailwind-v4-38bdf8)
 
@@ -21,9 +21,11 @@ The application has been migrated from a frontend-only Supabase design to a deco
 - **AI Career Chatbot:** Real-time floating and full-page career helper leveraging Gemini context-aware conversations.
 - **Job Tracker Kanban:** Visual pipeline manager tracking job stages (Interested, Applied, Interview, Offer, Rejected) persisted in the database via the [job_tracker.py](file:///c:/Users/sivan/OneDrive/Attachments/Documents/IIT%20patna_project/backend/app/routers/job_tracker.py) backend.
 
-### 🛡️ Recruiter & Hiring Manager Screenings
+### 🛡️ Recruiter & Hiring Manager Workspaces
+- **Job Management:** Post, edit, draft, and delete jobs from the dashboard.
 - **AI Candidate Screening:** Automatically evaluates applicant profiles, returning match scores, strengths/concerns, and interview questions.
-- **Role-Based Workspaces:** Secure portals for Candidate, Recruiter, and Hiring Manager environments, gated server-side via custom JWT authentication.
+- **Role-Based Workspaces:** Portals for Candidate, Recruiter, and Hiring Manager environments, gated server-side via custom JWT authentication.
+- **Developer Role Switcher:** Dropdown in the header menu that allows developers to easily switch active roles (`Candidate`, `Recruiter`, `Hiring Manager`) to review different dashboards locally.
 
 ---
 
@@ -34,12 +36,12 @@ The system flows through a unified Gateway Proxy setup:
 ```mermaid
 graph TD
     A[React Client] -->|API Calls /api/...| B[FastAPI Backend - Port 8000]
-    B -->|JWT Auth Verification| C[Database: PostgreSQL / SQLite]
+    B -->|JWT Auth Verification| C[Database: Supabase PostgreSQL]
     B -->|AI Requests Proxy| D[Google Gemini API]
     B -->|PDF Parsing| E[PyMuPDF Service]
 ```
 
-- **Authentication:** Controlled entirely by the backend via JWT (JSON Web Tokens). The frontend stores the token in `localStorage` and routes all API operations through a custom fetch interceptor [api.ts](file:///c:/Users/sivan/OneDrive/Attachments/Documents/IIT%20patna_project/src/lib/api.ts).
+- **Authentication:** Controlled entirely by the backend via JWT (JSON Web Tokens). Hashing is handled using direct `bcrypt` calls to ensure compatibility. The frontend stores the token in `localStorage` and routes all API operations through a custom fetch interceptor [api.ts](file:///c:/Users/sivan/OneDrive/Attachments/Documents/IIT%20patna_project/src/lib/api.ts).
 - **AI Integrations:** All AI services (ATS analyzer, interview grader, cover letter generator) run via the backend's [ai_proxy.py](file:///c:/Users/sivan/OneDrive/Attachments/Documents/IIT%20patna_project/backend/app/routers/ai_proxy.py) forwarding requests to Gemini.
 
 ---
@@ -60,7 +62,7 @@ IIT patna_project/
 │   │   │   └── models.py     # SQLAlchemy DB Schemas
 │   │   ├── routers/          # Modular Routers (Auth, ATS, Tracker, AI)
 │   │   ├── services/         # AIService (Gemini SDK) & PyMuPDF Parsers
-│   │   └── utils/            # JWT & Security Utilities
+│   │   └── utils/            # JWT & Security Utilities (Bcrypt)
 │   ├── alembic/              # Database Migration History
 │   ├── requirements.txt      # Python Package Dependencies
 │   └── alembic.ini           # Migration Tool Configuration
@@ -85,12 +87,12 @@ Create a `.env` file in the root directory:
 
 ```env
 # Frontend Configuration
-VITE_SUPABASE_PROJECT_ID="your-project-id"
-VITE_SUPABASE_URL="https://your-project.supabase.co"
-VITE_SUPABASE_PUBLISHABLE_KEY="your-publishable-key"
+VITE_SUPABASE_PROJECT_ID="rhfpnzsasqjravradxnf"
+VITE_SUPABASE_URL="https://rhfpnzsasqjravradxnf.supabase.co"
+VITE_SUPABASE_PUBLISHABLE_KEY="sb_publishable_JN_6e0CVbA1iRFs3z3XU4A_xLNoT_Ne"
 
 # Python Backend Configuration
-DATABASE_URL="sqlite:///./test.db"   # Use postgresql://... for production (Supabase)
+DATABASE_URL="postgresql://postgres:Database%40%23123%40@db.rhfpnzsasqjravradxnf.supabase.co:5432/postgres"
 JWT_SECRET_KEY="your-super-secret-jwt-key"
 GOOGLE_API_KEY="your-google-gemini-api-key"
 ```
@@ -113,7 +115,7 @@ pip install -r requirements.txt
 alembic upgrade head
 
 # Run FastAPI Server (starts on http://localhost:8000)
-uvicorn app.main:app --reload --port 8000
+python -m uvicorn app.main:app --reload --port 8000
 ```
 
 ### 3. Running the React Frontend
@@ -131,10 +133,4 @@ yarn dev
 ## 🔒 Security & Roles
 
 - **JWT Tokens:** Transmitted via the `Authorization: Bearer <token>` header, verified against [security.py](file:///c:/Users/sivan/OneDrive/Attachments/Documents/IIT%20patna_project/backend/app/utils/security.py).
-- **Role Control:** Users are assigned default roles (`candidate`, `recruiter`, `manager`) which restrict access to backend routes and frontend layout sections.
-
----
-
-## 📄 License
-
-This project is provided as-is for the repository owner.
+- **Role Control:** Users are assigned roles (`candidate`, `recruiter`, `hiring_manager`) which restrict access to backend routes and frontend layout sections. Toggling the active role via the header switcher will automatically redirect and mount the corresponding user portal.

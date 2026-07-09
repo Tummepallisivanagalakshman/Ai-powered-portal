@@ -141,7 +141,7 @@ export const getJob = async (jobId: string): Promise<Job | null> => {
   }
 };
 
-export const createJob = async (job: JobInput): Promise<Job> => {
+export const createJob = async (userId: string | number, job: JobInput): Promise<Job> => {
   return await apiFetch("/jobs", {
     method: "POST",
     body: JSON.stringify(job),
