@@ -17,13 +17,14 @@ interface AuthContextValue {
   loading: boolean;
   signIn: (token: string, user: User) => void;
   signOut: () => void;
+  setRole: (role: AppRole) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [role, setRole] = useState<AppRole | null>(null);
+  const [role, setRoleState] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,8 +37,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const userData = await apiFetch("/users/me");
         setUser(userData);
-        // Default role based on domain or app logic (since role table is mocked here)
-        setRole("candidate");
+        // Persist and load the active role from localStorage
+        const savedRole = localStorage.getItem("app_role") as AppRole;
+        setRoleState(savedRole || "candidate");
       } catch (err) {
         console.error("Token verification failed", err);
         localStorage.removeItem("access_token");
@@ -49,20 +51,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, []);
 
+  function setRole(newRole: AppRole) {
+    localStorage.setItem("app_role", newRole);
+    setRoleState(newRole);
+  }
+
   function signIn(token: string, fetchedUser: User) {
     localStorage.setItem("access_token", token);
     setUser(fetchedUser);
-    setRole("candidate"); // Customize as needed
+    const savedRole = localStorage.getItem("app_role") as AppRole;
+    setRoleState(savedRole || "candidate");
   }
 
   function signOut() {
     localStorage.removeItem("access_token");
+    localStorage.removeItem("app_role");
     setUser(null);
-    setRole(null);
+    setRoleState(null);
   }
 
   return (
-    <AuthContext.Provider value={{ user, role, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, role, loading, signIn, signOut, setRole }}>
       {children}
     </AuthContext.Provider>
   );
@@ -73,3 +82,4 @@ export function useAuth() {
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
 }
+

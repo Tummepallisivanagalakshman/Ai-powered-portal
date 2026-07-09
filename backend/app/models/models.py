@@ -1,6 +1,8 @@
 from sqlalchemy import Column, Integer, String, Boolean, Text, ForeignKey, Float, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+from sqlalchemy.dialects.postgresql import UUID, ARRAY
+import uuid
 from app.database import Base
 
 
@@ -187,3 +189,58 @@ class JobTrackerItem(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="tracker_items")
+
+
+class Job(Base):
+    __tablename__ = "jobs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    title = Column(Text, nullable=False)
+    department = Column(Text, nullable=True)
+    location = Column(Text, nullable=True)
+    employment_type = Column(Text, nullable=True)
+    description = Column(Text, nullable=False)
+    requirements = Column(Text, nullable=True)
+    status = Column(String(6), default="open")  # open, closed, draft
+    created_by = Column(UUID(as_uuid=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    company = Column(Text, nullable=True)
+    skills = Column(ARRAY(Text), nullable=True)
+    experience_required = Column(Text, nullable=True)
+
+    applications = relationship("Application", back_populates="job", cascade="all, delete-orphan")
+
+
+class Application(Base):
+    __tablename__ = "applications"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    job_id = Column(UUID(as_uuid=True), ForeignKey("jobs.id", ondelete="CASCADE"), nullable=False)
+    candidate_id = Column(UUID(as_uuid=True), nullable=True)
+    resume_path = Column(Text, nullable=True)
+    resume_text = Column(Text, nullable=True)
+    cover_note = Column(Text, nullable=True)
+    status = Column(String(19), default="applied")  # applied, screening, shortlisted, rejected, approved
+    ai_score = Column(Integer, nullable=True)
+    ai_summary = Column(Text, nullable=True)
+    ai_strengths = Column(Text, nullable=True)
+    ai_concerns = Column(Text, nullable=True)
+    ai_recommendation = Column(Text, nullable=True)
+    manager_notes = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    full_name = Column(Text, nullable=True)
+    email = Column(Text, nullable=True)
+    phone = Column(Text, nullable=True)
+    education = Column(Text, nullable=True)
+    skills = Column(Text, nullable=True)
+    experience = Column(Text, nullable=True)
+    ai_experience = Column(Text, nullable=True)
+    match_score = Column(Integer, nullable=True)
+    matching_skills = Column(Text, nullable=True)
+    missing_skills = Column(Text, nullable=True)
+    match_recommendation = Column(Text, nullable=True)
+
+    job = relationship("Job", back_populates="applications")
+

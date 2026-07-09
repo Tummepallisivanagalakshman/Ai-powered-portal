@@ -68,7 +68,7 @@ export function AppShell({
   children: ReactNode;
   actions?: ReactNode;
 }) {
-  const { user, signOut } = useAuth();
+  const { user, signOut, role, setRole } = useAuth();
   const navigate = useNavigate();
   const state = useRouterState();
   const currentPath = state.location.pathname;
@@ -84,7 +84,20 @@ export function AppShell({
     navigate({ to: "/auth", replace: true });
   }
 
+  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newRole = e.target.value as any;
+    setRole(newRole);
+    // Redirect to the new role home page
+    const homes: Record<string, string> = {
+      candidate: "/candidate",
+      recruiter: "/recruiter",
+      hiring_manager: "/manager",
+    };
+    navigate({ to: homes[newRole] || "/candidate", replace: true });
+  };
+
   const unreadCount = notifications.filter((n) => !n.read).length;
+
 
   const handleMarkAllRead = () => {
     setNotifications(notifications.map((n) => ({ ...n, read: true })));
@@ -271,6 +284,17 @@ export function AppShell({
                 </div>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Role Switcher */}
+            <select
+              value={role || "candidate"}
+              onChange={handleRoleChange}
+              className="h-9 rounded-xl border border-border bg-background px-3 text-xs font-semibold text-foreground cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="candidate">Candidate</option>
+              <option value="recruiter">Recruiter</option>
+              <option value="hiring_manager">Hiring Manager</option>
+            </select>
 
             {/* Theme Toggle */}
             <ThemeToggle />

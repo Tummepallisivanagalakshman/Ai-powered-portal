@@ -64,3 +64,18 @@ def get_user_resumes(
     """
     resumes = db.query(Resume).filter(Resume.user_id == current_user.id).all()
     return resumes
+
+@router.get("/download/{filename}")
+def download_resume(
+    filename: str,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Serve a resume file for download or in-browser viewing.
+    """
+    from fastapi.responses import FileResponse
+    file_path = os.path.join(UPLOAD_DIR, filename)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(file_path, media_type="application/pdf")
+
