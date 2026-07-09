@@ -20,7 +20,9 @@ import app.models.models
 config = context.config
 
 # Overwrite the sqlalchemy.url from our dynamically loaded settings
-config.set_main_option("sqlalchemy.url", SQLALCHEMY_DATABASE_URL)
+# configparser uses % for interpolation, so we must escape them by doubling
+_db_url = SQLALCHEMY_DATABASE_URL.replace("%", "%%")
+config.set_main_option("sqlalchemy.url", _db_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
