@@ -261,3 +261,127 @@ export const getResumeUrl = async (resumePath: string): Promise<string> => {
   const filename = parts[parts.length - 1];
   return `/api/resumes/download/${encodeURIComponent(filename)}`;
 };
+
+// ─── Notifications API ──────────────────────────────────────────────────────
+export interface NotificationItem {
+  id: number;
+  user_id: number;
+  title: string;
+  message: string;
+  type: string;
+  is_read: boolean;
+  created_at: string;
+}
+
+export const listNotifications = async (): Promise<NotificationItem[]> => {
+  try {
+    return await apiFetch("/notifications/");
+  } catch {
+    return [];
+  }
+};
+
+export const markNotificationRead = async (id: number): Promise<NotificationItem> => {
+  return await apiFetch(`/notifications/${id}/read`, { method: "PATCH" });
+};
+
+export const markAllNotificationsRead = async (): Promise<any> => {
+  return await apiFetch("/notifications/read-all", { method: "POST" });
+};
+
+// ─── Admin API ─────────────────────────────────────────────────────────────
+export interface AdminStats {
+  total_users: number;
+  total_jobs: number;
+  total_applications: number;
+  total_interview_sessions: number;
+}
+
+export interface AdminUser {
+  id: number;
+  name: string;
+  email: string;
+  preferred_roles: string | null;
+  created_at: string;
+}
+
+export interface AdminAuditLog {
+  id: number;
+  timestamp: string;
+  event: string;
+  severity: string;
+}
+
+export const getAdminStats = async (): Promise<AdminStats> => {
+  return await apiFetch("/admin/stats");
+};
+
+export const listAdminUsers = async (): Promise<AdminUser[]> => {
+  return await apiFetch("/admin/users");
+};
+
+export const updateUserRole = async (userId: number, preferredRoles: string): Promise<AdminUser> => {
+  return await apiFetch(`/admin/users/${userId}/role`, {
+    method: "PUT",
+    body: JSON.stringify({ preferred_roles: preferredRoles }),
+  });
+};
+
+export const deleteUser = async (userId: number): Promise<any> => {
+  return await apiFetch(`/admin/users/${userId}`, { method: "DELETE" });
+};
+
+export const getAdminAuditLogs = async (): Promise<AdminAuditLog[]> => {
+  return await apiFetch("/admin/audit-logs");
+};
+
+// ─── Saved AI History & Reports API ──────────────────────────────────────────
+export interface SavedRoadmap {
+  id: number;
+  target_role: string;
+  current_skills: string;
+  plan_json: string;
+  created_at: string;
+}
+
+export interface SavedCoverLetter {
+  id: number;
+  company_name: string;
+  job_title: string;
+  tone: string;
+  content: string;
+  created_at: string;
+}
+
+export interface SavedInterview {
+  id: number;
+  job_role: string;
+  difficulty: string;
+  total_score?: number;
+  created_at: string;
+}
+
+export const listLearningRoadmaps = async (): Promise<SavedRoadmap[]> => {
+  try {
+    return await apiFetch("/roadmap/");
+  } catch {
+    return [];
+  }
+};
+
+export const listCoverLetters = async (): Promise<SavedCoverLetter[]> => {
+  try {
+    return await apiFetch("/cover-letter/");
+  } catch {
+    return [];
+  }
+};
+
+export const listInterviewSessions = async (): Promise<SavedInterview[]> => {
+  try {
+    return await apiFetch("/interviews/sessions");
+  } catch {
+    return [];
+  }
+};
+

@@ -5,6 +5,7 @@ from app.database import SessionLocal
 from app.dependencies import get_db, get_current_user
 from app.models.models import User, InterviewSession, InterviewAnswer
 from app.services.ai_service import AIService
+from app.routers.notifications import create_user_notification
 
 router = APIRouter(
     prefix="/interviews",
@@ -68,4 +69,16 @@ def evaluate_and_save_answer(
     db.commit()
     db.refresh(db_answer)
     
+    # Trigger notification
+    try:
+        create_user_notification(
+            db,
+            current_user.id,
+            "Interview Graded",
+            f"Your response for '{session.job_role}' mock interview has been graded. Score: {evaluation.get('score', 0)}/100.",
+            "interview"
+        )
+    except Exception as e:
+        print(f"Failed to generate notification: {e}")
+        
     return db_answer

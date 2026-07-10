@@ -19,8 +19,11 @@ import {
   Search,
   Menu,
   Sparkles,
+  Shield,
 } from "lucide-react";
 import { useAuth } from "@/lib/useAuth";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { listNotifications, markNotificationRead, markAllNotificationsRead } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ChatWidget } from "@/components/ChatWidget";
@@ -41,7 +44,7 @@ interface NavItem {
   icon: any;
 }
 
-const navItems: NavItem[] = [
+const candidateNavItems: NavItem[] = [
   { label: "Dashboard", to: "/candidate", icon: LayoutDashboard },
   { label: "Resume Analyzer", to: "/resume-analyzer", icon: FileSearch },
   { label: "ATS Score", to: "/ats-score", icon: FileCheck },
@@ -56,6 +59,32 @@ const navItems: NavItem[] = [
   { label: "Profile", to: "/profile", icon: User },
   { label: "Settings", to: "/settings", icon: Settings },
 ];
+
+const recruiterNavItems: NavItem[] = [
+  { label: "Dashboard", to: "/recruiter", icon: LayoutDashboard },
+  { label: "Jobs Management", to: "/jobs", icon: FileText },
+  { label: "Profile", to: "/profile", icon: User },
+  { label: "Settings", to: "/settings", icon: Settings },
+];
+
+const managerNavItems: NavItem[] = [
+  { label: "Dashboard", to: "/manager", icon: LayoutDashboard },
+  { label: "Profile", to: "/profile", icon: User },
+  { label: "Settings", to: "/settings", icon: Settings },
+];
+
+const adminNavItems: NavItem[] = [
+  { label: "Admin Console", to: "/admin", icon: Shield },
+  { label: "Profile", to: "/profile", icon: User },
+  { label: "Settings", to: "/settings", icon: Settings },
+];
+
+function getNavItemsForRole(role: string | null): NavItem[] {
+  if (role === "recruiter") return recruiterNavItems;
+  if (role === "hiring_manager") return managerNavItems;
+  if (role === "admin") return adminNavItems;
+  return candidateNavItems;
+}
 
 export function AppShell({
   title,
@@ -73,11 +102,32 @@ export function AppShell({
   const state = useRouterState();
   const currentPath = state.location.pathname;
 
-  const [notifications, setNotifications] = useState([
-    { id: 1, text: "Resume analysis completed successfully!", read: false },
-    { id: 2, text: "Mock interview score is ready to view.", read: false },
-    { id: 3, text: "New matching job added: Senior Frontend Engineer.", read: true },
-  ]);
+  const navItems = getNavItemsForRole(role);
+
+  const queryClient = useQueryClient();
+  const notificationsQuery = useQuery({
+    queryKey: ["notifications", user?.id],
+    queryFn: listNotifications,
+    enabled: !!user,
+    refetchInterval: 10000,
+  });
+
+  const notifications = notificationsQuery.data || [];
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
+
+  const markReadMutation = useMutation({
+    mutationFn: markNotificationRead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications", user?.id] });
+    },
+  });
+
+  const markAllReadMutation = useMutation({
+    mutationFn: markAllNotificationsRead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications", user?.id] });
+    },
+  });
 
   async function handleSignOut() {
     await signOut();
@@ -92,15 +142,17 @@ export function AppShell({
       candidate: "/candidate",
       recruiter: "/recruiter",
       hiring_manager: "/manager",
+      admin: "/admin",
     };
     navigate({ to: homes[newRole] || "/candidate", replace: true });
   };
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
-
-
   const handleMarkAllRead = () => {
-    setNotifications(notifications.map((n) => ({ ...n, read: true })));
+    markAllReadMutation.mutate();
+  };
+
+  const handleMarkRead = (id: number) => {
+    markReadMutation.mutate(id);
   };
 
   // Determine active item to highlight
@@ -272,12 +324,14 @@ export function AppShell({
                     notifications.map((n) => (
                       <DropdownMenuItem
                         key={n.id}
+                        onClick={() => !n.is_read && handleMarkRead(n.id)}
                         className={`p-4 border-b border-border/40 focus:bg-muted/50 flex flex-col items-start gap-1 cursor-pointer ${
-                          !n.read ? "bg-blue-600/5 font-medium" : ""
+                          !n.is_read ? "bg-primary/5 font-medium" : ""
                         }`}
                       >
-                        <span className="text-sm">{n.text}</span>
-                        <span className="text-[10px] text-muted-foreground">Just now</span>
+                        <span className="font-semibold text-xs text-primary">{n.title}</span>
+                        <span className="text-xs text-foreground/80">{n.message}</span>
+                        <span className="text-[10px] text-muted-foreground">{new Date(n.created_at).toLocaleString()}</span>
                       </DropdownMenuItem>
                     ))
                   )}
@@ -294,6 +348,7 @@ export function AppShell({
               <option value="candidate">Candidate</option>
               <option value="recruiter">Recruiter</option>
               <option value="hiring_manager">Hiring Manager</option>
+              <option value="admin">Admin</option>
             </select>
 
             {/* Theme Toggle */}

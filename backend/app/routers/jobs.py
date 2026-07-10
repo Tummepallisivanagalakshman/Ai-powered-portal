@@ -6,6 +6,7 @@ from uuid import UUID, uuid4
 from datetime import datetime
 from app.dependencies import get_db, get_current_user
 from app.models.models import User, Job, Application, InterviewQuestion
+from app.routers.notifications import create_user_notification
 import logging
 
 logger = logging.getLogger(__name__)
@@ -262,6 +263,19 @@ def apply_to_job(
     db.add(db_app)
     db.commit()
     db.refresh(db_app)
+    
+    # Trigger notification
+    try:
+        create_user_notification(
+            db, 
+            current_user.id, 
+            "Application Submitted", 
+            f"You have successfully applied for the position of '{job.title}' at '{job.company or 'Company'}'.",
+            "application"
+        )
+    except Exception as e:
+        logger.error(f"Failed to generate application notification: {e}")
+
     return {"status": "success", "application_id": db_app.id}
 
 @router.get("/applications/me", response_model=List[ApplicationWithDetails])
@@ -326,6 +340,21 @@ def update_application_status(
         raise HTTPException(status_code=404, detail="Application not found")
     app.status = status
     db.commit()
+
+    # Trigger notification
+    try:
+        candidate_user = db.query(User).filter(User.email == app.email).first()
+        if candidate_user:
+            create_user_notification(
+                db,
+                candidate_user.id,
+                "Application Update",
+                f"Your application for '{app.job.title}' has been updated to '{status.capitalize()}'.",
+                "application"
+            )
+    except Exception as e:
+        logger.error(f"Failed to generate status change notification: {e}")
+
     return {"status": "success", "message": f"Application status updated to {status}"}
 
 class DecisionPayload(BaseModel):

@@ -1,6 +1,6 @@
 // Standalone types — decoupled from Supabase generated types
 
-export type AppRole = "candidate" | "recruiter" | "hiring_manager";
+export type AppRole = "candidate" | "recruiter" | "hiring_manager" | "admin";
 export type ApplicationStatus =
   | "applied"
   | "screening"
@@ -65,12 +65,14 @@ export const ROLE_LABELS: Record<AppRole, string> = {
   candidate: "Candidate",
   recruiter: "HR / Recruiter",
   hiring_manager: "Hiring Manager",
+  admin: "Administrator",
 };
 
 export const ROLE_HOME: Record<AppRole, string> = {
   candidate: "/candidate",
   recruiter: "/recruiter",
   hiring_manager: "/manager",
+  admin: "/admin",
 };
 
 export const STATUS_LABELS: Record<ApplicationStatus, string> = {

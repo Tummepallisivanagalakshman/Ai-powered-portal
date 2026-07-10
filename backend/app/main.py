@@ -29,7 +29,7 @@ from app.routers import (
     auth, users, resume, ats, jobs,
     chatbot, dashboard, reports,
     job_tracker, roadmap, interview,
-    cover_letter, ai_proxy
+    cover_letter, ai_proxy, admin, notifications
 )
 
 app.include_router(auth.router, prefix="/api")
@@ -45,3 +45,5 @@ app.include_router(roadmap.router, prefix="/api")
 app.include_router(interview.router, prefix="/api")
 app.include_router(cover_letter.router, prefix="/api")
 app.include_router(ai_proxy.router, prefix="/api")
+app.include_router(admin.router, prefix="/api")
+app.include_router(notifications.router, prefix="/api")

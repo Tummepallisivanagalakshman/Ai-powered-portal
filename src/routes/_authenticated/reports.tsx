@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { AppShell } from "@/components/AppShell";
-import { Download, TrendingUp, Calendar, Video, FileText, CheckCircle2 } from "lucide-react";
+import { Download, TrendingUp, Calendar, Video, FileText, CheckCircle2, Compass, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
+import { listLearningRoadmaps, listCoverLetters, listInterviewSessions } from "@/lib/api";
 import {
   AreaChart,
   Area,
@@ -39,24 +41,32 @@ const mockInterviewHistory = [
 ];
 
 function ReportsPage() {
+  const roadmapsQuery = useQuery({ queryKey: ["saved-roadmaps"], queryFn: listLearningRoadmaps });
+  const coverLettersQuery = useQuery({ queryKey: ["saved-cover-letters"], queryFn: listCoverLetters });
+  const interviewsQuery = useQuery({ queryKey: ["saved-interviews"], queryFn: listInterviewSessions });
+
+  const mockHistory = interviewsQuery.data || [];
+  const letterHistory = coverLettersQuery.data || [];
+  const roadmapHistory = roadmapsQuery.data || [];
+
   return (
     <AppShell
-      title="Saved Reports"
-      subtitle="View your historic scoring progress, interview history, and analytics summaries."
+      title="Saved Reports & Analytics"
+      subtitle="View your historic learning roadmaps, cover letters, mock interviews, and performance history."
       actions={
-        <Button onClick={() => toast.success("Batch export compiled successfully!")} className="bg-blue-600 text-white rounded-xl text-xs h-9">
+        <Button onClick={() => toast.success("Batch export compiled successfully!")} className="bg-primary text-white rounded-xl text-xs h-9">
           <Download className="mr-1.5 h-4 w-4" /> Export All Data
         </Button>
       }
     >
       <div className="grid gap-8 lg:grid-cols-3">
-        {/* Left Side: Trends Charts */}
+        {/* Left Side: Trends Charts & Roadmaps */}
         <div className="lg:col-span-2 space-y-6">
           {/* ATS compatibility Area Chart */}
           <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-soft space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="font-display font-semibold text-base">ATS Match Trend</h3>
-              <Badge variant="secondary" className="text-[10px]"><TrendingUp className="h-3 w-3 mr-1" /> +23% overall</Badge>
+              <Badge variant="secondary" className="text-[10px] bg-primary/10 text-primary border-none"><TrendingUp className="h-3 w-3 mr-1" /> +23% overall</Badge>
             </div>
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -67,13 +77,48 @@ function ReportsPage() {
                   <Tooltip />
                   <defs>
                     <linearGradient id="colorAts" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                      <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <Area type="monotone" dataKey="score" stroke="#8b5cf6" strokeWidth={2.5} fillOpacity={1} fill="url(#colorAts)" />
+                  <Area type="monotone" dataKey="score" stroke="var(--primary)" strokeWidth={2.5} fillOpacity={1} fill="url(#colorAts)" />
                 </AreaChart>
               </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Learning Roadmaps History */}
+          <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-soft space-y-4">
+            <h3 className="font-display font-semibold text-base flex items-center gap-2">
+              <Compass className="h-4.5 w-4.5 text-primary" />
+              Syllabus & Learning Roadmaps
+            </h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {roadmapsQuery.isLoading ? (
+                <div className="col-span-2 py-6 text-center">
+                  <Loader2 className="h-5 w-5 animate-spin mx-auto text-primary" />
+                </div>
+              ) : roadmapHistory.length === 0 ? (
+                <p className="col-span-2 text-xs text-muted-foreground text-center py-6">No learning roadmaps generated yet.</p>
+              ) : (
+                roadmapHistory.map((item) => (
+                  <div key={item.id} className="p-4 rounded-2xl border border-border/60 bg-muted/5 flex flex-col justify-between text-xs">
+                    <div>
+                      <p className="font-bold text-sm text-foreground">{item.target_role}</p>
+                      <p className="text-muted-foreground mt-1 line-clamp-2">Skills: {item.current_skills || "General"}</p>
+                    </div>
+                    <div className="mt-4 flex items-center justify-between text-[10px]">
+                      <span className="text-muted-foreground">{new Date(item.created_at).toLocaleDateString()}</span>
+                      <button
+                        onClick={() => toast.info(`Viewing saved roadmap: ${item.target_role}`)}
+                        className="text-primary hover:underline font-semibold"
+                      >
+                        Launch Modules
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -83,50 +128,73 @@ function ReportsPage() {
           {/* Mock Interview History */}
           <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-soft space-y-4">
             <h3 className="font-display font-semibold text-base flex items-center gap-2">
-              <Video className="h-4.5 w-4.5 text-purple-600" />
-              Interview History
+              <Video className="h-4.5 w-4.5 text-primary" />
+              Interview Sessions
             </h3>
             
             <div className="space-y-3">
-              {mockInterviewHistory.map((item, idx) => (
-                <div key={idx} className="p-3 rounded-xl border border-border/40 bg-muted/10 flex items-center justify-between text-xs">
-                  <div className="space-y-1">
-                    <p className="font-semibold">{item.role}</p>
-                    <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                      <Calendar className="h-3.5 w-3.5" /> {item.date}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-green-500">{item.score}</p>
-                    <button onClick={() => toast.info("Viewing historical feedback...")} className="text-[9px] text-blue-600 hover:underline">
-                      View Feedback
-                    </button>
-                  </div>
+              {interviewsQuery.isLoading ? (
+                <div className="py-6 text-center">
+                  <Loader2 className="h-5 w-5 animate-spin mx-auto text-primary" />
                 </div>
-              ))}
+              ) : mockHistory.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-6">No interview sessions practiced yet.</p>
+              ) : (
+                mockHistory.map((item) => (
+                  <div key={item.id} className="p-3 rounded-xl border border-border/40 bg-muted/10 flex items-center justify-between text-xs">
+                    <div className="space-y-1">
+                      <p className="font-semibold">{item.job_role}</p>
+                      <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <Calendar className="h-3.5 w-3.5" /> {new Date(item.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-green-500">{item.total_score ? `${item.total_score}%` : "Pending"}</p>
+                      <button
+                        onClick={() => toast.info(`Reviewing Mock Session ID: ${item.id}`)}
+                        className="text-[9px] text-primary hover:underline"
+                      >
+                        View Grades
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
-          {/* Resume Audits History */}
+          {/* Cover Letters History */}
           <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-soft space-y-4">
             <h3 className="font-display font-semibold text-base flex items-center gap-2">
-              <FileText className="h-4.5 w-4.5 text-blue-600" />
-              Resume Audit History
+              <FileText className="h-4.5 w-4.5 text-primary" />
+              Cover Letters History
             </h3>
             
-            <div className="space-y-2.5">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-muted-foreground">resume_v2.1.pdf</span>
-                <Badge variant="secondary" className="text-[10px] bg-green-500/10 text-green-500 border-none font-semibold">85% score</Badge>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-muted-foreground">resume_v2.0.pdf</span>
-                <Badge variant="secondary" className="text-[10px] bg-blue-500/10 text-blue-600 border-none font-semibold">74% score</Badge>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-muted-foreground">resume_v1.0.pdf</span>
-                <Badge variant="secondary" className="text-[10px] bg-muted text-muted-foreground border-none font-semibold">55% score</Badge>
-              </div>
+            <div className="space-y-3">
+              {coverLettersQuery.isLoading ? (
+                <div className="py-6 text-center">
+                  <Loader2 className="h-5 w-5 animate-spin mx-auto text-primary" />
+                </div>
+              ) : letterHistory.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-6">No cover letters generated yet.</p>
+              ) : (
+                letterHistory.map((item) => (
+                  <div key={item.id} className="p-3 rounded-xl border border-border/40 bg-muted/10 flex items-center justify-between text-xs">
+                    <div className="space-y-1">
+                      <p className="font-semibold">{item.job_title}</p>
+                      <p className="text-[10px] text-muted-foreground">{item.company_name} · {item.tone}</p>
+                    </div>
+                    <div className="text-right">
+                      <button
+                        onClick={() => toast.info(`Copied Letter content for ${item.company_name}`)}
+                        className="text-[9px] text-primary hover:underline font-semibold block"
+                      >
+                        Copy Draft
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
