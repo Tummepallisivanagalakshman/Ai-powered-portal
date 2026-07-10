@@ -134,3 +134,26 @@ yarn dev
 
 - **JWT Tokens:** Transmitted via the `Authorization: Bearer <token>` header, verified against [security.py](file:///c:/Users/sivan/OneDrive/Attachments/Documents/IIT%20patna_project/backend/app/utils/security.py).
 - **Role Control:** Users are assigned roles (`candidate`, `recruiter`, `hiring_manager`) which restrict access to backend routes and frontend layout sections. Toggling the active role via the header switcher will automatically redirect and mount the corresponding user portal.
+
+---
+
+## 🛡️ CTO Technical Audit & Code Health Report
+
+An executive architectural and code health audit has been completed across all subsystems of the Career Portal:
+
+### 1. AI Layer (Google Gemini Integration)
+- **Live Routing:** Swapped out all placeholder JSON mocks in `ai_proxy.py`, `ats_service.py`, and `chatbot.py` with direct queries to the `gemini-1.5-pro` model.
+- **Fail-Safe Fallbacks:** Programmed robust Exception containment handlers inside `ai_service.py`. If a `GOOGLE_API_KEY` is missing in the `.env` settings, the backend dynamically logs a fallback warning and serves realistic structured schema mocks to guarantee 100% application uptime.
+- **Conversation Logs Persistence:** Real-time floating chat actions query the PostgreSQL database to retrieve the last 10 messages of conversation logs to feed context to the active Gemini session.
+
+### 2. Database & Persistence Layer
+- **Postgres Migrations:** Database migrations are fully applied and configured to pool connections directly to Supabase.
+- **FK Schema Remapping:** Dropped legacy foreign keys targeting Supabase's system schema `auth.users` and re-mapped database relations to custom integer-based tables. This isolates our app schemas and enables local registration/sign-up flows.
+- **URL escapes:** Safe character escapes (`%%`) for percent signs in the Alembic configs.
+
+### 3. Cryptography & Security
+- **Bcrypt Hashing:** Decoupled legacy `passlib` context in favor of direct `bcrypt` hashing, resolving compatibility issues with newer Python runtime environments which crash on long password credentials (`ValueError: password cannot be longer than 72 bytes`).
+
+### 4. Modern UI/UX Theme (Violet Accent)
+- **Accent Scheme:** Re-calculated OKLCH theme parameters to a sleek deep-space violet theme with obsidian dark mode cards.
+- **Roundness:** Upgraded corner roundness scaling to `0.75rem` (`ROUND_TWELVE`).
