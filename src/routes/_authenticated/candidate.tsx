@@ -127,15 +127,15 @@ function CandidateDashboard() {
       subtitle="Welcome back! Here is a summary of your career progress."
     >
       {/* 1. WELCOME CARD */}
-      <div className="relative mb-8 overflow-hidden rounded-3xl border border-blue-500/20 bg-gradient-to-r from-blue-600/5 to-purple-600/5 p-6 sm:p-8">
-        <div className="absolute -right-8 -top-8 h-40 w-40 rounded-full bg-purple-500/10 blur-2xl" />
+      <div className="relative mb-8 overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-r from-primary/5 to-accent/5 p-6 sm:p-8">
+        <div className="absolute -right-8 -top-8 h-40 w-40 rounded-full bg-accent/10 blur-2xl" />
         <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <Award className="h-4 w-4" />
               </span>
-              <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Pro Profile Active</span>
+              <span className="text-xs font-semibold text-primary uppercase tracking-wider">Pro Profile Active</span>
             </div>
             <h2 className="font-display text-2xl font-bold">
               Ready to land your next role, {user?.email?.split("@")[0] || "User"}?
@@ -144,7 +144,7 @@ function CandidateDashboard() {
               Your overall resume score has improved by 15% this week. Let's finish your pending learning modules to unlock higher job matching.
             </p>
           </div>
-          <Button asChild className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full">
+          <Button asChild className="bg-gradient-to-r from-primary to-accent text-white rounded-full">
             <Link to="/resume-analyzer">Analyze Resume</Link>
           </Button>
         </div>
@@ -203,7 +203,7 @@ function CandidateDashboard() {
       <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {/* Resume Analyses */}
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-soft flex items-center gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <FileText className="h-5 w-5" />
           </div>
           <div>
@@ -214,7 +214,7 @@ function CandidateDashboard() {
 
         {/* Interview Sessions */}
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-soft flex items-center gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
             <Video className="h-5 w-5" />
           </div>
           <div>
@@ -225,7 +225,7 @@ function CandidateDashboard() {
 
         {/* Learning Progress */}
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-soft flex items-center gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-500/10 text-green-600">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-success/10 text-success">
             <BookOpen className="h-5 w-5" />
           </div>
           <div>
@@ -236,7 +236,7 @@ function CandidateDashboard() {
 
         {/* Saved Reports */}
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-soft flex items-center gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-yellow-500/10 text-yellow-600">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-warning/10 text-warning">
             <FolderHeart className="h-5 w-5" />
           </div>
           <div>
@@ -258,7 +258,7 @@ function CandidateDashboard() {
                 <XAxis dataKey="name" stroke="#888888" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis stroke="#888888" fontSize={11} tickLine={false} axisLine={false} domain={[40, 100]} />
                 <Tooltip />
-                <Line type="monotone" dataKey="score" stroke="#2563eb" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                <Line type="monotone" dataKey="score" stroke="var(--primary)" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -274,7 +274,7 @@ function CandidateDashboard() {
                 <XAxis dataKey="name" stroke="#888888" fontSize={10} tickLine={false} axisLine={false} />
                 <YAxis stroke="#888888" fontSize={11} tickLine={false} axisLine={false} domain={[0, 100]} />
                 <Tooltip />
-                <Bar dataKey="value" fill="#9333ea" radius={[4, 4, 0, 0]} barSize={28} />
+                <Bar dataKey="value" fill="var(--accent)" radius={[4, 4, 0, 0]} barSize={28} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -292,11 +292,11 @@ function CandidateDashboard() {
                 <Tooltip />
                 <defs>
                   <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                    <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <Area type="monotone" dataKey="score" stroke="#3b82f6" strokeWidth={2.5} fillOpacity={1} fill="url(#colorScore)" />
+                <Area type="monotone" dataKey="score" stroke="var(--primary)" strokeWidth={2.5} fillOpacity={1} fill="url(#colorScore)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -309,7 +309,7 @@ function CandidateDashboard() {
         <section className="lg:col-span-2">
           <div className="mb-4 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600/10 text-blue-600">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Briefcase className="h-4 w-4" />
               </span>
               <h2 className="font-display text-lg font-bold">Suggested Job Matches</h2>
@@ -330,11 +330,11 @@ function CandidateDashboard() {
                     className="hover-lift group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-soft"
                   >
                     <span
-                      className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-gradient-to-r from-blue-600 to-purple-600 transition-transform duration-300 group-hover:scale-x-100"
+                      className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-gradient-to-r from-primary to-accent transition-transform duration-300 group-hover:scale-x-100"
                     />
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <h3 className="font-display text-base font-bold leading-tight transition-colors group-hover:text-blue-600">
+                        <h3 className="font-display text-base font-bold leading-tight transition-colors group-hover:text-primary">
                           {job.title}
                         </h3>
                         <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
@@ -360,7 +360,7 @@ function CandidateDashboard() {
                         </p>
                         <div className="flex flex-wrap gap-1.5">
                           {skills.map((s) => (
-                            <Badge key={s} variant="outline" className="text-[9px] py-0">
+                             <Badge key={s} variant="outline" className="text-[9px] py-0">
                               {s}
                             </Badge>
                           ))}
@@ -375,7 +375,7 @@ function CandidateDashboard() {
                         </Button>
                       ) : (
                         <Button
-                          className="group/btn w-full h-9 text-xs transition-transform active:scale-[0.98] bg-blue-600 hover:bg-blue-700"
+                          className="group/btn w-full h-9 text-xs transition-transform active:scale-[0.98] bg-primary hover:bg-primary/90 text-white"
                           asChild
                         >
                           <Link to="/apply/$jobId" params={{ jobId: job.id }}>
@@ -395,7 +395,7 @@ function CandidateDashboard() {
         {/* Recent activity */}
         <section>
           <div className="mb-4 flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-600/10 text-purple-600">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 text-accent">
               <Activity className="h-4 w-4" />
             </span>
             <h2 className="font-display text-lg font-bold">Recent Application Progress</h2>
@@ -422,7 +422,7 @@ function ActivityRow({ app }: { app: ApplicationWithJob }) {
   return (
     <div className="hover-lift group rounded-2xl border border-border bg-card p-4 shadow-soft">
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
           <Briefcase className="h-4 w-4" />
         </div>
 
