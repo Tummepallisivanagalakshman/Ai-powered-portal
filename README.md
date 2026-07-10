@@ -19,7 +19,7 @@ The application has been migrated from a frontend-only Supabase design to a deco
 - **Cover Letter Generator:** Generates professional, copyable drafts using selected tone templates.
 - **Interactive Resume Builder:** Supports building resumes across 7 key sections (Personal, Education, Skills, Experience, Projects, Certifications, Achievements) with live preview formatting.
 - **AI Career Chatbot:** Real-time floating and full-page career helper leveraging Gemini context-aware conversations.
-- **Job Tracker Kanban:** Visual pipeline manager tracking job stages (Interested, Applied, Interview, Offer, Rejected) persisted in the database via the [job_tracker.py](file:///c:/Users/sivan/OneDrive/Attachments/Documents/IIT%20patna_project/backend/app/routers/job_tracker.py) backend.
+- **Job Tracker Kanban:** Visual pipeline manager tracking job stages (Interested, Applied, Interview, Offer, Rejected) persisted in the database via the [job_tracker.py](./backend/app/routers/job_tracker.py) backend.
 
 ### 🛡️ Recruiter & Hiring Manager Workspaces
 - **Job Management:** Post, edit, draft, and delete jobs from the dashboard.
@@ -41,8 +41,8 @@ graph TD
     B -->|PDF Parsing| E[PyMuPDF Service]
 ```
 
-- **Authentication:** Controlled entirely by the backend via JWT (JSON Web Tokens). Hashing is handled using direct `bcrypt` calls to ensure compatibility. The frontend stores the token in `localStorage` and routes all API operations through a custom fetch interceptor [api.ts](file:///c:/Users/sivan/OneDrive/Attachments/Documents/IIT%20patna_project/src/lib/api.ts).
-- **AI Integrations:** All AI services (ATS analyzer, interview grader, cover letter generator) run via the backend's [ai_proxy.py](file:///c:/Users/sivan/OneDrive/Attachments/Documents/IIT%20patna_project/backend/app/routers/ai_proxy.py) forwarding requests to Gemini.
+- **Authentication:** Controlled entirely by the backend via JWT (JSON Web Tokens). Hashing is handled using direct `bcrypt` calls to ensure compatibility. The frontend stores the token in `localStorage` and routes all API operations through a custom fetch interceptor [api.ts](./src/lib/api.ts).
+- **AI Integrations:** All AI services (ATS analyzer, interview grader, cover letter generator) run via the backend's [ai_proxy.py](./backend/app/routers/ai_proxy.py) forwarding requests to Gemini.
 
 ---
 
@@ -132,7 +132,7 @@ yarn dev
 
 ## 🔒 Security & Roles
 
-- **JWT Tokens:** Transmitted via the `Authorization: Bearer <token>` header, verified against [security.py](file:///c:/Users/sivan/OneDrive/Attachments/Documents/IIT%20patna_project/backend/app/utils/security.py).
+- **JWT Tokens:** Transmitted via the `Authorization: Bearer <token>` header, verified against [security.py](./backend/app/utils/security.py).
 - **Role Control:** Users are assigned roles (`candidate`, `recruiter`, `hiring_manager`) which restrict access to backend routes and frontend layout sections. Toggling the active role via the header switcher will automatically redirect and mount the corresponding user portal.
 
 ---
