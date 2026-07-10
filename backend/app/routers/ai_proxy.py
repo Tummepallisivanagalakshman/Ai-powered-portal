@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from typing import List, Optional
-from app.dependencies import get_current_user
-from app.models.models import User
-# We can import the actual AIService once fully implemented, for now we mock the expected shapes matching the frontend
+from typing import List, Optional, Any
+import uuid
+import urllib.parse
+from app.dependencies import get_db, get_current_user
+from app.models.models import User, Application, Job, InterviewQuestion
 from app.services.ai_service import AIService
 
 router = APIRouter(
@@ -15,24 +17,61 @@ class ScreeningRequest(BaseModel):
     applicationId: str
 
 @router.post("/screening")
-def run_screening(req: ScreeningRequest, current_user: User = Depends(get_current_user)):
-    return {
-        "score": 85,
-        "summary": "Strong candidate with relevant experience.",
-        "strengths": "- React\n- TypeScript",
-        "concerns": "- None",
-        "recommendation": "Strong fit"
-    }
+def run_screening(
+    req: ScreeningRequest, 
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        app_uuid = uuid.UUID(req.applicationId)
+        app = db.query(Application).filter(Application.id == app_uuid).first()
+    except Exception:
+        app = None
+
+    resume_text = app.resume_text if app else ""
+    cover_note = app.cover_note if app else ""
+    res = AIService.run_screening(resume_text, cover_note)
+    
+    if app:
+        app.ai_score = res.get("score")
+        app.ai_summary = res.get("summary")
+        app.ai_strengths = res.get("strengths")
+        app.ai_concerns = res.get("concerns")
+        app.ai_recommendation = res.get("recommendation")
+        db.commit()
+        db.refresh(app)
+        
+    return res
 
 @router.post("/interview-questions")
-def generate_interview_questions(req: ScreeningRequest, current_user: User = Depends(get_current_user)):
-    return {
-        "questions": [
-            {"category": "Technical", "question": "Explain React hooks."},
-            {"category": "Behavioral", "question": "Tell me about a time you failed."},
-            {"category": "Scenario-based", "question": "How would you design a rate limiter?"}
-        ]
-    }
+def generate_interview_questions(
+    req: ScreeningRequest, 
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        app_uuid = uuid.UUID(req.applicationId)
+        app = db.query(Application).filter(Application.id == app_uuid).first()
+    except Exception:
+        app = None
+
+    role = app.job.title if (app and app.job) else "Software Engineer"
+    questions = AIService.generate_interview_questions(role, "Intermediate", "Technical")
+    
+    if app:
+        db_q = db.query(InterviewQuestion).filter(InterviewQuestion.application_id == app.id).first()
+        if not db_q:
+            db_q = InterviewQuestion(
+                application_id=app.id,
+                questions=questions,
+                created_by=current_user.id
+            )
+            db.add(db_q)
+        else:
+            db_q.questions = questions
+        db.commit()
+        
+    return {"questions": questions}
 
 class ResumeSummaryRequest(BaseModel):
     jobId: str
@@ -42,12 +81,7 @@ class ResumeSummaryRequest(BaseModel):
 
 @router.post("/resume-summary")
 def generate_resume_summary(req: ResumeSummaryRequest, current_user: User = Depends(get_current_user)):
-    return {
-        "summary": "Great summary.",
-        "strengths": "Very strong.",
-        "experience": "5 years frontend.",
-        "roleFit": "Strong fit for Senior Frontend Engineer"
-    }
+    return AIService.generate_resume_summary(req.resumeText, req.skills, req.jobId, req.coverNote or "")
 
 class JobMatchRequest(BaseModel):
     jobId: str
@@ -56,26 +90,14 @@ class JobMatchRequest(BaseModel):
 
 @router.post("/job-match")
 def generate_job_match(req: JobMatchRequest, current_user: User = Depends(get_current_user)):
-    return {
-        "score": 90,
-        "matchingSkills": "React, TS",
-        "missingSkills": "GraphQL",
-        "recommendation": "Strong Match"
-    }
+    return AIService.generate_job_match(req.resumeText, req.skills, req.jobId)
 
 class ParseResumeRequest(BaseModel):
     resumeText: str
 
 @router.post("/parse-resume")
 def parse_resume_fields(req: ParseResumeRequest, current_user: User = Depends(get_current_user)):
-    return {
-        "fullName": "Jane Doe",
-        "email": "jane@example.com",
-        "phone": "555-0100",
-        "education": "BS Computer Science",
-        "skills": "Python, React",
-        "experience": "Software Engineer 2020-Present"
-    }
+    return AIService.parse_resume_fields(req.resumeText)
 
 class CoverLetterRequest(BaseModel):
     jobTitle: str
@@ -85,7 +107,8 @@ class CoverLetterRequest(BaseModel):
 
 @router.post("/cover-letter")
 def generate_cover_letter(req: CoverLetterRequest, current_user: User = Depends(get_current_user)):
-    return {"letter": "Dear Hiring Manager,\n\nI am very interested in this role."}
+    letter = AIService.generate_cover_letter(req.jobDescription, req.company, req.jobTitle)
+    return {"letter": letter}
 
 class ATSRequest(BaseModel):
     resumeText: str
@@ -93,28 +116,11 @@ class ATSRequest(BaseModel):
 
 @router.post("/match-resume-jd")
 def match_resume_to_jd(req: ATSRequest, current_user: User = Depends(get_current_user)):
-    return {
-        "score": 75,
-        "matchingSkills": ["React"],
-        "missingSkills": ["Node"],
-        "hiringProbability": 70,
-        "recommendation": "Good match"
-    }
+    return AIService.match_resume_to_jd(req.resumeText, req.jobDescription)
 
 @router.post("/analyze-ats")
 def analyze_resume_ats(req: ATSRequest, current_user: User = Depends(get_current_user)):
-    return {
-      "score": 88,
-      "formattingChecks": [
-        { "name": "File Structure", "score": 100, "status": "passed", "desc": "Clean." },
-        { "name": "Section Headings", "score": 90, "status": "passed", "desc": "Good." },
-        { "name": "Keyword Density", "score": 70, "status": "warning", "desc": "Okay." },
-        { "name": "Quantified Metrics", "score": 60, "status": "warning", "desc": "Needs metrics." },
-        { "name": "Contact & Links", "score": 100, "status": "passed", "desc": "Valid." }
-      ],
-      "missingKeywords": ["GraphQL"],
-      "matchingKeywords": ["React"]
-    }
+    return AIService.analyze_resume_ats(req.resumeText, req.jobDescription)
 
 class MockQuestionsRequest(BaseModel):
     role: str
@@ -123,8 +129,9 @@ class MockQuestionsRequest(BaseModel):
 
 @router.post("/mock-questions")
 def generate_mock_questions(req: MockQuestionsRequest, current_user: User = Depends(get_current_user)):
+    questions_list = AIService.generate_interview_questions(req.role, req.difficulty, req.type)
     return {
-        "questions": ["Question 1?", "Question 2?", "Question 3?"]
+        "questions": [q.get("question", "") for q in questions_list]
     }
 
 class MockGradeRequest(BaseModel):
@@ -133,13 +140,7 @@ class MockGradeRequest(BaseModel):
 
 @router.post("/mock-grade")
 def grade_mock_session(req: MockGradeRequest, current_user: User = Depends(get_current_user)):
-    return {
-        "overallScore": 85,
-        "technicalScore": 80,
-        "communicationScore": 90,
-        "confidenceScore": 85,
-        "suggestions": ["Good job", "Speak louder"]
-    }
+    return AIService.grade_mock_session(req.questions, req.answers)
 
 class RoadmapRequest(BaseModel):
     currentSkills: str
@@ -147,12 +148,14 @@ class RoadmapRequest(BaseModel):
 
 @router.post("/roadmap")
 def generate_learning_roadmap(req: RoadmapRequest, current_user: User = Depends(get_current_user)):
+    # Return 5 structured lessons with search helpers matching targetRole
+    encoded_role = urllib.parse.quote(req.targetRole)
     return {
         "lessons": [
-            { "title": "Lesson 1", "duration": "1 hr", "difficulty": "Easy", "category": "Core", "link": "https://react.dev" },
-            { "title": "Lesson 2", "duration": "1 hr", "difficulty": "Easy", "category": "Core", "link": "https://react.dev" },
-            { "title": "Lesson 3", "duration": "1 hr", "difficulty": "Easy", "category": "Core", "link": "https://react.dev" },
-            { "title": "Lesson 4", "duration": "1 hr", "difficulty": "Easy", "category": "Core", "link": "https://react.dev" },
-            { "title": "Lesson 5", "duration": "1 hr", "difficulty": "Easy", "category": "Core", "link": "https://react.dev" },
+            { "title": f"Fundamentals of {req.targetRole}", "duration": "2 hrs", "difficulty": "Easy", "category": "Core", "link": f"https://google.com/search?q={encoded_role}+fundamentals" },
+            { "title": f"Intermediate {req.targetRole} Design", "duration": "3 hrs", "difficulty": "Medium", "category": "Design", "link": f"https://google.com/search?q={encoded_role}+architecture" },
+            { "title": f"Advanced Patterns in {req.targetRole}", "duration": "4 hrs", "difficulty": "Hard", "category": "Advanced", "link": f"https://google.com/search?q={encoded_role}+advanced+coding" },
+            { "title": f"Testing & CI/CD for {req.targetRole}", "duration": "2 hrs", "difficulty": "Medium", "category": "Testing", "link": f"https://google.com/search?q={encoded_role}+testing+tools" },
+            { "title": f"Mock Reviews & Deployment", "duration": "3 hrs", "difficulty": "Easy", "category": "Interview", "link": f"https://google.com/search?q={encoded_role}+interview+prep" }
         ]
     }

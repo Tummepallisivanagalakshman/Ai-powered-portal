@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from typing import List, Optional, Any
 from app.dependencies import get_db, get_current_user
 from app.models.models import User, ChatbotHistory
+from app.services.ai_service import AIService
 
 router = APIRouter(
     prefix="/chatbot",
@@ -35,18 +36,24 @@ def chat_with_assistant(
     )
     db.add(user_msg)
 
-    # Generate bot response (mocked — replace with Gemini SDK call)
-    context_hint = ""
-    if request.history:
-        context_hint = f" (continuing a conversation of {len(request.history)} messages)"
-    bot_reply = (
-        f"Hello {current_user.name}! I'm your AI Career Advisor{context_hint}. "
-        f"Regarding your question about \"{request.message[:60]}...\": "
-        "I recommend tailoring your resume to the job description, "
-        "practicing STAR-format answers for behavioral rounds, and researching "
-        "the company's recent projects before interviews."
+    # Fetch recent context from database history
+    try:
+        db_history = db.query(ChatbotHistory).filter(
+            ChatbotHistory.user_id == current_user.id
+        ).order_by(ChatbotHistory.created_at.desc()).limit(10).all()
+        db_history.reverse()
+        history_list = [{"message": h.message, "is_bot": h.is_bot} for h in db_history]
+    except Exception:
+        history_list = []
+
+    # Call Gemini model
+    bot_reply = AIService.chat_with_assistant(
+        user_name=current_user.name or "User",
+        message=request.message,
+        history=history_list
     )
 
+    # Save bot message
     bot_msg = ChatbotHistory(
         user_id=current_user.id,
         message=bot_reply,
@@ -57,7 +64,6 @@ def chat_with_assistant(
 
     return {"reply": bot_reply}
 
-# Keep original /send endpoint for backward compat
 class ChatMessageRequest(BaseModel):
     message: str
 
@@ -67,11 +73,30 @@ def send_message(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    user_msg = ChatbotHistory(user_id=current_user.id, message=request.message, is_bot=False)
+    """
+    Backward-compatible /send endpoint routing to live AI agent.
+    """
+    user_msg = ChatbotHistory(
+        user_id=current_user.id,
+        message=request.message,
+        is_bot=False
+    )
     db.add(user_msg)
-    bot_reply = f"I am your AI Career Advisor. I see you asked: {request.message}"
-    bot_msg = ChatbotHistory(user_id=current_user.id, message=bot_reply, is_bot=True)
+
+    # Call Gemini model
+    bot_reply = AIService.chat_with_assistant(
+        user_name=current_user.name or "User",
+        message=request.message,
+        history=[]
+    )
+
+    bot_msg = ChatbotHistory(
+        user_id=current_user.id,
+        message=bot_reply,
+        is_bot=True
+    )
     db.add(bot_msg)
     db.commit()
     db.refresh(bot_msg)
+
     return {"id": bot_msg.id, "message": bot_msg.message, "is_bot": bot_msg.is_bot}
