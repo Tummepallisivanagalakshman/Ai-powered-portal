@@ -20,12 +20,14 @@ The application has been migrated from a frontend-only Supabase design to a deco
 - **Interactive Resume Builder:** Supports building resumes across 7 key sections (Personal, Education, Skills, Experience, Projects, Certifications, Achievements) with live preview formatting.
 - **AI Career Chatbot:** Real-time floating and full-page career helper leveraging Gemini context-aware conversations.
 - **Job Tracker Kanban:** Visual pipeline manager tracking job stages (Interested, Applied, Interview, Offer, Rejected) persisted in the database via the [job_tracker.py](./backend/app/routers/job_tracker.py) backend.
+- **Notification Center:** Real-time notification Bell popover on header alerting candidates and recruiters of applications, status updates, and completed interview reviews.
 
-### 🛡️ Recruiter & Hiring Manager Workspaces
+### 🛡️ Recruiter, Hiring Manager, & Admin Workspaces
 - **Job Management:** Post, edit, draft, and delete jobs from the dashboard.
 - **AI Candidate Screening:** Automatically evaluates applicant profiles, returning match scores, strengths/concerns, and interview questions.
-- **Role-Based Workspaces:** Portals for Candidate, Recruiter, and Hiring Manager environments, gated server-side via custom JWT authentication.
-- **Developer Role Switcher:** Dropdown in the header menu that allows developers to easily switch active roles (`Candidate`, `Recruiter`, `Hiring Manager`) to review different dashboards locally.
+- **Admin Dashboard Console:** Aggregates DB statistics (Total Users, Jobs, Applications, Mocks), lets admins manage user directories, edit preferred roles, and view system security audits.
+- **Role-Based Workspaces:** Portals for Candidate, Recruiter, Hiring Manager, and Admin environments, gated server-side via custom JWT authentication.
+- **Developer Role Switcher:** Dropdown in the header menu that allows developers to easily switch active roles (`Candidate`, `Recruiter`, `Hiring Manager`, `Admin`) to review different dashboards locally.
 
 ---
 
@@ -157,3 +159,8 @@ An executive architectural and code health audit has been completed across all s
 ### 4. Modern UI/UX Theme (Violet Accent)
 - **Accent Scheme:** Re-calculated OKLCH theme parameters to a sleek deep-space violet theme with obsidian dark mode cards.
 - **Roundness:** Upgraded corner roundness scaling to `0.75rem` (`ROUND_TWELVE`).
+
+### 5. Unified Lifecycle Feature Release
+- **Admin Dashboard Console:** Added `admin` routing workspace with stats aggregation, system audit log stream, and administrative user directory deletion/role-update options.
+- **Notification Center:** Implemented `notifications` Postgres model and linked header Bell popover dropdown listing alerts on mock interview reviews, application submissions, and status changes.
+- **Saved History & Reports:** Re-mapped candidate Reports panel to load real database records for cover letter drafts, learning roadmaps, and completed mock interview details.
