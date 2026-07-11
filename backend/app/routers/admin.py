@@ -42,18 +42,21 @@ def get_admin_stats(
     """
     Fetch counts of various entities across the platform.
     """
-    # Simple security check (could expand to true admin flags, but preferred_roles is used as role selector)
-    # If the user toggles their active role, we can allow viewing this
-    user_count = db.query(func.count(User.id)).scalar()
-    job_count = db.query(func.count(Job.id)).scalar()
-    app_count = db.query(func.count(Application.id)).scalar()
-    interview_count = db.query(func.count(InterviewSession.id)).scalar()
+    # Run a single query to count all tables in one roundtrip
+    from sqlalchemy import text
+    result = db.execute(text("""
+        SELECT 
+            (SELECT COUNT(*) FROM users) AS total_users,
+            (SELECT COUNT(*) FROM jobs) AS total_jobs,
+            (SELECT COUNT(*) FROM applications) AS total_applications,
+            (SELECT COUNT(*) FROM interview_sessions) AS total_interview_sessions
+    """)).first()
     
     return {
-        "total_users": user_count or 0,
-        "total_jobs": job_count or 0,
-        "total_applications": app_count or 0,
-        "total_interview_sessions": interview_count or 0
+        "total_users": result.total_users if result else 0,
+        "total_jobs": result.total_jobs if result else 0,
+        "total_applications": result.total_applications if result else 0,
+        "total_interview_sessions": result.total_interview_sessions if result else 0
     }
 
 @router.get("/users", response_model=list[UserAdminResponse])

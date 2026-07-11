@@ -112,51 +112,63 @@ function AdminDashboard() {
       subtitle="Overview of platform performance, user profiles, and security log status."
     >
       {/* 1. METRICS GRID */}
-      {statsQuery.isLoading ? (
-        <SkeletonCard />
-      ) : (
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-          <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-soft hover-lift flex items-center gap-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Users className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Total Users</p>
-              <p className="font-display text-xl font-bold mt-0.5">{statsQuery.data?.total_users}</p>
-            </div>
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-soft hover-lift flex items-center gap-4">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Users className="h-5 w-5" />
           </div>
-
-          <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-soft hover-lift flex items-center gap-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Briefcase className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Active Jobs</p>
-              <p className="font-display text-xl font-bold mt-0.5">{statsQuery.data?.total_jobs}</p>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-soft hover-lift flex items-center gap-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <FileText className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Applications</p>
-              <p className="font-display text-xl font-bold mt-0.5">{statsQuery.data?.total_applications}</p>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-soft hover-lift flex items-center gap-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Video className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Mock Sessions</p>
-              <p className="font-display text-xl font-bold mt-0.5">{statsQuery.data?.total_interview_sessions}</p>
-            </div>
+          <div>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Total Users</p>
+            {statsQuery.isLoading || statsQuery.data === undefined ? (
+              <div className="h-5 w-12 bg-muted/40 animate-pulse rounded mt-1.5" />
+            ) : (
+              <p className="font-display text-xl font-bold mt-0.5">{statsQuery.data.total_users}</p>
+            )}
           </div>
         </div>
-      )}
+
+        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-soft hover-lift flex items-center gap-4">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Briefcase className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Active Jobs</p>
+            {statsQuery.isLoading || statsQuery.data === undefined ? (
+              <div className="h-5 w-12 bg-muted/40 animate-pulse rounded mt-1.5" />
+            ) : (
+              <p className="font-display text-xl font-bold mt-0.5">{statsQuery.data.total_jobs}</p>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-soft hover-lift flex items-center gap-4">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <FileText className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Applications</p>
+            {statsQuery.isLoading || statsQuery.data === undefined ? (
+              <div className="h-5 w-12 bg-muted/40 animate-pulse rounded mt-1.5" />
+            ) : (
+              <p className="font-display text-xl font-bold mt-0.5">{statsQuery.data.total_applications}</p>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-soft hover-lift flex items-center gap-4">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Video className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Mock Sessions</p>
+            {statsQuery.isLoading || statsQuery.data === undefined ? (
+              <div className="h-5 w-12 bg-muted/40 animate-pulse rounded mt-1.5" />
+            ) : (
+              <p className="font-display text-xl font-bold mt-0.5">{statsQuery.data.total_interview_sessions}</p>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* 2. ADMIN ACTIONS SECTION */}
       <div className="grid gap-6 lg:grid-cols-3">
