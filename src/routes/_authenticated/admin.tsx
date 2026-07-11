@@ -34,6 +34,26 @@ export const Route = createFileRoute("/_authenticated/admin")({
   ),
 });
 
+const SkeletonCard = () => (
+  <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-8">
+    {[1, 2, 3, 4].map((i) => (
+      <div key={i} className="h-24 w-full rounded-2xl bg-muted/20 border border-border/10 animate-pulse" />
+    ))}
+  </div>
+);
+
+const SkeletonRows = () => (
+  <>
+    {[1, 2, 3, 4, 5].map((i) => (
+      <tr key={i} className="border-b border-border/10 animate-pulse">
+        <td colSpan={5} className="py-4 px-2">
+          <div className="h-4 bg-muted/20 rounded w-full" />
+        </td>
+      </tr>
+    ))}
+  </>
+);
+
 function AdminDashboard() {
   const queryClient = useQueryClient();
 
@@ -85,9 +105,7 @@ function AdminDashboard() {
     >
       {/* 1. METRICS GRID */}
       {statsQuery.isLoading ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        </div>
+        <SkeletonCard />
       ) : (
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-8">
           <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-soft hover-lift flex items-center gap-4">
@@ -153,11 +171,7 @@ function AdminDashboard() {
               </thead>
               <tbody>
                 {usersQuery.isLoading ? (
-                  <tr>
-                    <td colSpan={5} className="py-8 text-center">
-                      <Loader2 className="h-5 w-5 animate-spin mx-auto text-primary" />
-                    </td>
-                  </tr>
+                  <SkeletonRows />
                 ) : (usersQuery.data || []).length === 0 ? (
                   <tr>
                     <td colSpan={5} className="py-8 text-center text-muted-foreground">

@@ -31,6 +31,7 @@ import { Route as AuthenticatedCoverLetterRouteImport } from './routes/_authenti
 import { Route as AuthenticatedCareerChatRouteImport } from './routes/_authenticated/career-chat'
 import { Route as AuthenticatedCandidateRouteImport } from './routes/_authenticated/candidate'
 import { Route as AuthenticatedAtsScoreRouteImport } from './routes/_authenticated/ats-score'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedReviewApplicationIdRouteImport } from './routes/_authenticated/review.$applicationId'
 import { Route as AuthenticatedApplyJobIdRouteImport } from './routes/_authenticated/apply.$jobId'
 
@@ -147,6 +148,11 @@ const AuthenticatedAtsScoreRoute = AuthenticatedAtsScoreRouteImport.update({
   path: '/ats-score',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedReviewApplicationIdRoute =
   AuthenticatedReviewApplicationIdRouteImport.update({
     id: '/review/$applicationId',
@@ -163,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/ats-score': typeof AuthenticatedAtsScoreRoute
   '/candidate': typeof AuthenticatedCandidateRoute
   '/career-chat': typeof AuthenticatedCareerChatRoute
@@ -188,6 +195,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/ats-score': typeof AuthenticatedAtsScoreRoute
   '/candidate': typeof AuthenticatedCandidateRoute
   '/career-chat': typeof AuthenticatedCareerChatRoute
@@ -215,6 +223,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/ats-score': typeof AuthenticatedAtsScoreRoute
   '/_authenticated/candidate': typeof AuthenticatedCandidateRoute
   '/_authenticated/career-chat': typeof AuthenticatedCareerChatRoute
@@ -242,6 +251,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/sitemap.xml'
+    | '/admin'
     | '/ats-score'
     | '/candidate'
     | '/career-chat'
@@ -267,6 +277,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/sitemap.xml'
+    | '/admin'
     | '/ats-score'
     | '/candidate'
     | '/career-chat'
@@ -293,6 +304,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/sitemap.xml'
+    | '/_authenticated/admin'
     | '/_authenticated/ats-score'
     | '/_authenticated/candidate'
     | '/_authenticated/career-chat'
@@ -478,6 +490,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAtsScoreRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/review/$applicationId': {
       id: '/_authenticated/review/$applicationId'
       path: '/review/$applicationId'
@@ -496,6 +515,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAtsScoreRoute: typeof AuthenticatedAtsScoreRoute
   AuthenticatedCandidateRoute: typeof AuthenticatedCandidateRoute
   AuthenticatedCareerChatRoute: typeof AuthenticatedCareerChatRoute
@@ -519,6 +539,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAtsScoreRoute: AuthenticatedAtsScoreRoute,
   AuthenticatedCandidateRoute: AuthenticatedCandidateRoute,
   AuthenticatedCareerChatRoute: AuthenticatedCareerChatRoute,

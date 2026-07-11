@@ -40,6 +40,14 @@ const mockInterviewHistory = [
   { role: "UX Designer", date: "2026-06-18", score: "71%" },
 ];
 
+const SkeletonLoader = ({ count = 3 }: { count?: number }) => (
+  <div className="space-y-3 w-full">
+    {Array.from({ length: count }).map((_, i) => (
+      <div key={i} className="h-16 w-full rounded-2xl bg-muted/30 animate-pulse border border-border/10" />
+    ))}
+  </div>
+);
+
 function ReportsPage() {
   const roadmapsQuery = useQuery({ queryKey: ["saved-roadmaps"], queryFn: listLearningRoadmaps });
   const coverLettersQuery = useQuery({ queryKey: ["saved-cover-letters"], queryFn: listCoverLetters });
@@ -95,8 +103,8 @@ function ReportsPage() {
             </h3>
             <div className="grid gap-4 sm:grid-cols-2">
               {roadmapsQuery.isLoading ? (
-                <div className="col-span-2 py-6 text-center">
-                  <Loader2 className="h-5 w-5 animate-spin mx-auto text-primary" />
+                <div className="col-span-2">
+                  <SkeletonLoader count={2} />
                 </div>
               ) : roadmapHistory.length === 0 ? (
                 <p className="col-span-2 text-xs text-muted-foreground text-center py-6">No learning roadmaps generated yet.</p>
@@ -134,9 +142,7 @@ function ReportsPage() {
             
             <div className="space-y-3">
               {interviewsQuery.isLoading ? (
-                <div className="py-6 text-center">
-                  <Loader2 className="h-5 w-5 animate-spin mx-auto text-primary" />
-                </div>
+                <SkeletonLoader count={3} />
               ) : mockHistory.length === 0 ? (
                 <p className="text-xs text-muted-foreground text-center py-6">No interview sessions practiced yet.</p>
               ) : (
@@ -172,9 +178,7 @@ function ReportsPage() {
             
             <div className="space-y-3">
               {coverLettersQuery.isLoading ? (
-                <div className="py-6 text-center">
-                  <Loader2 className="h-5 w-5 animate-spin mx-auto text-primary" />
-                </div>
+                <SkeletonLoader count={3} />
               ) : letterHistory.length === 0 ? (
                 <p className="text-xs text-muted-foreground text-center py-6">No cover letters generated yet.</p>
               ) : (
