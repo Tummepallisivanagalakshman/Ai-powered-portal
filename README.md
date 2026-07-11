@@ -164,3 +164,9 @@ An executive architectural and code health audit has been completed across all s
 - **Admin Dashboard Console:** Added `admin` routing workspace with stats aggregation, system audit log stream, and administrative user directory deletion/role-update options.
 - **Notification Center:** Implemented `notifications` Postgres model and linked header Bell popover dropdown listing alerts on mock interview reviews, application submissions, and status changes.
 - **Saved History & Reports:** Re-mapped candidate Reports panel to load real database records for cover letter drafts, learning roadmaps, and completed mock interview details.
+
+### 6. Performance & Responsive UI/UX Optimizations
+- **Single-Roundtrip DB Counts Parallelization:** Refactored `/admin/stats` backend to execute all 4 entity count subqueries inside a single PostgreSQL roundtrip, boosting stats API response speed 4x.
+- **Database Indexes:** Created performance indexing for `notifications(user_id)`, `applications(email)`, `interview_sessions(user_id)`, `cover_letters(user_id)`, and `learning_roadmaps(user_id)` to speed up API lookups.
+- **Inline Skeleton Loaders:** Added premium inline loader pulse indicators for stats numbers, providing instant visual feedback on metrics cards.
+- **Responsive Mobile Card Layouts:** Redesigned the User Directory Control panel on the Admin workspace to display a mobile-friendly card layout on small devices and clean table rows on desktop screens.
