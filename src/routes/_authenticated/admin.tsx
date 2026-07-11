@@ -35,7 +35,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 });
 
 const SkeletonCard = () => (
-  <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-8">
+  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
     {[1, 2, 3, 4].map((i) => (
       <div key={i} className="h-24 w-full rounded-2xl bg-muted/20 border border-border/10 animate-pulse" />
     ))}
@@ -52,6 +52,14 @@ const SkeletonRows = () => (
       </tr>
     ))}
   </>
+);
+
+const SkeletonMobileCards = () => (
+  <div className="space-y-4 md:hidden">
+    {[1, 2, 3].map((i) => (
+      <div key={i} className="h-28 w-full rounded-2xl bg-muted/20 border border-border/10 animate-pulse" />
+    ))}
+  </div>
 );
 
 function AdminDashboard() {
@@ -107,7 +115,7 @@ function AdminDashboard() {
       {statsQuery.isLoading ? (
         <SkeletonCard />
       ) : (
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
           <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-soft hover-lift flex items-center gap-4">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <Users className="h-5 w-5" />
@@ -158,60 +166,115 @@ function AdminDashboard() {
             <UserCheck className="h-5 w-5 text-primary" />
             <h3 className="font-display font-semibold text-base">User Directory & Role Control</h3>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-border/40 text-muted-foreground font-bold">
-                  <th className="py-3 px-2">ID</th>
-                  <th className="py-3 px-2">Name</th>
-                  <th className="py-3 px-2">Email</th>
-                  <th className="py-3 px-2">Role Setup</th>
-                  <th className="py-3 px-2 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {usersQuery.isLoading ? (
-                  <SkeletonRows />
-                ) : (usersQuery.data || []).length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-8 text-center text-muted-foreground">
-                      No users registered.
-                    </td>
-                  </tr>
-                ) : (
-                  (usersQuery.data || []).map((u) => (
-                    <tr key={u.id} className="border-b border-border/20 hover:bg-muted/10">
-                      <td className="py-3.5 px-2 font-mono text-muted-foreground">{u.id}</td>
-                      <td className="py-3.5 px-2 font-medium">{u.name}</td>
-                      <td className="py-3.5 px-2 text-muted-foreground">{u.email}</td>
-                      <td className="py-3.5 px-2">
-                        <select
-                          value={u.preferred_roles || "candidate"}
-                          onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                          className="rounded border border-border bg-background px-2 py-1 focus:outline-none"
-                        >
-                          <option value="candidate">Candidate</option>
-                          <option value="recruiter">Recruiter</option>
-                          <option value="hiring_manager">Hiring Manager</option>
-                          <option value="admin">Admin</option>
-                        </select>
-                      </td>
-                      <td className="py-3.5 px-2 text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteUser(u.id)}
-                          className="hover:text-destructive hover:bg-destructive/10"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </td>
+          {usersQuery.isLoading ? (
+            <>
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-border/40 text-muted-foreground font-bold">
+                      <th className="py-3 px-2">ID</th>
+                      <th className="py-3 px-2">Name</th>
+                      <th className="py-3 px-2">Email</th>
+                      <th className="py-3 px-2">Role Setup</th>
+                      <th className="py-3 px-2 text-right">Actions</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  </thead>
+                  <tbody>
+                    <SkeletonRows />
+                  </tbody>
+                </table>
+              </div>
+              <SkeletonMobileCards />
+            </>
+          ) : (usersQuery.data || []).length === 0 ? (
+            <div className="py-8 text-center text-sm text-muted-foreground">
+              No users registered.
+            </div>
+          ) : (
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-border/40 text-muted-foreground font-bold">
+                      <th className="py-3 px-2">ID</th>
+                      <th className="py-3 px-2">Name</th>
+                      <th className="py-3 px-2">Email</th>
+                      <th className="py-3 px-2">Role Setup</th>
+                      <th className="py-3 px-2 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(usersQuery.data || []).map((u) => (
+                      <tr key={u.id} className="border-b border-border/20 hover:bg-muted/10">
+                        <td className="py-3.5 px-2 font-mono text-muted-foreground">{u.id}</td>
+                        <td className="py-3.5 px-2 font-medium">{u.name}</td>
+                        <td className="py-3.5 px-2 text-muted-foreground">{u.email}</td>
+                        <td className="py-3.5 px-2">
+                          <select
+                            value={u.preferred_roles || "candidate"}
+                            onChange={(e) => handleRoleChange(u.id, e.target.value)}
+                            className="rounded border border-border bg-background px-2 py-1 focus:outline-none"
+                          >
+                            <option value="candidate">Candidate</option>
+                            <option value="recruiter">Recruiter</option>
+                            <option value="hiring_manager">Hiring Manager</option>
+                            <option value="admin">Admin</option>
+                          </select>
+                        </td>
+                        <td className="py-3.5 px-2 text-right">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteUser(u.id)}
+                            className="hover:text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Card List View */}
+              <div className="block md:hidden space-y-4">
+                {(usersQuery.data || []).map((u) => (
+                  <div key={u.id} className="p-4 rounded-2xl border border-border/60 bg-muted/5 space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="font-mono text-[10px] text-muted-foreground">ID: {u.id}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteUser(u.id)}
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-foreground">{u.name}</p>
+                      <p className="text-xs text-muted-foreground">{u.email}</p>
+                    </div>
+                    <div className="flex items-center justify-between pt-1 border-t border-border/20">
+                      <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Role</span>
+                      <select
+                        value={u.preferred_roles || "candidate"}
+                        onChange={(e) => handleRoleChange(u.id, e.target.value)}
+                        className="rounded border border-border bg-background px-2 py-1 text-xs focus:outline-none"
+                      >
+                        <option value="candidate">Candidate</option>
+                        <option value="recruiter">Recruiter</option>
+                        <option value="hiring_manager">Hiring Manager</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         {/* Audit Log Stream */}
