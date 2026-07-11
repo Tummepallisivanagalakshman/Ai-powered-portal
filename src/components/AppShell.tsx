@@ -341,6 +341,8 @@ export function AppShell({
 
             {/* Role Switcher */}
             <select
+              id="role-switcher"
+              data-testid="role-switcher"
               value={role || "candidate"}
               onChange={handleRoleChange}
               className="h-9 rounded-xl border border-border bg-background px-3 text-xs font-semibold text-foreground cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
