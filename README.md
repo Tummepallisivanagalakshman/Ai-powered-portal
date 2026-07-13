@@ -19,13 +19,20 @@ The application has been migrated from a frontend-only Supabase design to a deco
 - **Cover Letter Generator:** Generates professional, copyable drafts using selected tone templates.
 - **Interactive Resume Builder:** Supports building resumes across 7 key sections (Personal, Education, Skills, Experience, Projects, Certifications, Achievements) with live preview formatting.
 - **AI Career Chatbot:** Real-time floating and full-page career helper leveraging Gemini context-aware conversations.
-- **Job Tracker Kanban:** Visual pipeline manager tracking job stages (Interested, Applied, Interview, Offer, Rejected) persisted in the database via the [job_tracker.py](./backend/app/routers/job_tracker.py) backend.
-- **Notification Center:** Real-time notification Bell popover on header alerting candidates and recruiters of applications, status updates, and completed interview reviews.
+- **Job Tracker Kanban:** Visual pipeline manager tracking job stages (Interested, Applied, Interview, Offer, Rejected) persisted in the database.
+- **Alerts & Notifications History:** Real-time notification Bell popover on header alerting candidates and recruiters of applications, status updates, and completed interview reviews, with a dedicated History portal to mark as read or delete alerts.
+- **Interactive Calendar Planner:** Custom monthly grid mapping upcoming interview schedules, roadmap milestones, and deadlines with full CRUD capabilities.
+- **Company Guide Hub:** Directory detailing target employer overview, required skills, hiring trends, salary ranges, interview processes, and common questions, with a quick-bookmark system.
+- **File Workspace Manager:** Consolidated document table supporting upload, rename, download, and delete actions for resumes, cover letters, and custom certificates.
+- **AI Saved Workspace & Feedback Loops:** Browse historical cover letters, roadmaps, and mock sessions, export reports (PDF, DOCX, CSV), and submit thumbs up/down helpfulness comments.
+- **My Favorites Board:** Unified star board to bookmark target jobs and company guides.
 
 ### 🛡️ Recruiter, Hiring Manager, & Admin Workspaces
 - **Job Management:** Post, edit, draft, and delete jobs from the dashboard.
 - **AI Candidate Screening:** Automatically evaluates applicant profiles, returning match scores, strengths/concerns, and interview questions.
-- **Admin Dashboard Console:** Aggregates DB statistics (Total Users, Jobs, Applications, Mocks), lets admins manage user directories, edit preferred roles, and view system security audits.
+- **Recruiter Funnel Analytics:** Interactive pipeline progression charts (Applied -> Shortlisted -> Hired) and monthly sourcing trends.
+- **Admin Dashboard Console:** Aggregates DB statistics, lets admins manage user directories, edit preferred roles, and view system security audits.
+- **Admin Moderation & Health Center:** Moderate job postings (Approve, Close, Flag), view AI token estimates, check system diagnostics (latency, CPU, memory, database connection), and read candidate feedbacks.
 - **Role-Based Workspaces:** Portals for Candidate, Recruiter, Hiring Manager, and Admin environments, gated server-side via custom JWT authentication.
 - **Developer Role Switcher:** Dropdown in the header menu that allows developers to easily switch active roles (`Candidate`, `Recruiter`, `Hiring Manager`, `Admin`) to review different dashboards locally.
 
@@ -38,12 +45,14 @@ The system flows through a unified Gateway Proxy setup:
 ```mermaid
 graph TD
     A[React Client] -->|API Calls /api/...| B[FastAPI Backend - Port 8000]
-    B -->|JWT Auth Verification| C[Database: Supabase PostgreSQL]
+    B -->|Performance Middleware| B1[Log Performance Metrics]
+    B1 --> C[Database: Supabase PostgreSQL]
     B -->|AI Requests Proxy| D[Google Gemini API]
     B -->|PDF Parsing| E[PyMuPDF Service]
 ```
 
 - **Authentication:** Controlled entirely by the backend via JWT (JSON Web Tokens). Hashing is handled using direct `bcrypt` calls to ensure compatibility. The frontend stores the token in `localStorage` and routes all API operations through a custom fetch interceptor [api.ts](./src/lib/api.ts).
+- **HTTP Middleware Logging:** A custom HTTP performance middleware intercepts all API calls, calculating response latency and logging details to a `system_logs` table for admin diagnosis.
 - **AI Integrations:** All AI services (ATS analyzer, interview grader, cover letter generator) run via the backend's [ai_proxy.py](./backend/app/routers/ai_proxy.py) forwarding requests to Gemini.
 
 ---
@@ -56,13 +65,13 @@ The project is split into the React application and the Python backend:
 IIT patna_project/
 ├── backend/                  # Python FastAPI Backend
 │   ├── app/
-│   │   ├── main.py           # Backend Entrypoint & Router Registry
+│   │   ├── main.py           # Backend Entrypoint & Router Registry & Middleware
 │   │   ├── config.py         # Settings & Environment Loader
 │   │   ├── database.py       # SQLAlchemy Session Handler
 │   │   ├── dependencies.py   # FastAPI Dependency Injections (Auth, DB)
 │   │   ├── models/
 │   │   │   └── models.py     # SQLAlchemy DB Schemas
-│   │   ├── routers/          # Modular Routers (Auth, ATS, Tracker, AI)
+│   │   ├── routers/          # Modular Routers (Auth, ATS, Calendar, Files, Export)
 │   │   ├── services/         # AIService (Gemini SDK) & PyMuPDF Parsers
 │   │   └── utils/            # JWT & Security Utilities (Bcrypt)
 │   ├── alembic/              # Database Migration History
@@ -71,7 +80,14 @@ IIT patna_project/
 │
 ├── src/                      # React 19 Frontend
 │   ├── routes/               # File-based Routing (TanStack Router)
-│   ├── components/           # UI Elements & App Shells
+│   │   ├── _authenticated/   # Protected Candidate/Recruiter/Admin routes
+│   │   │   ├── calendar.tsx  # Interactive Calendar Planner
+│   │   │   ├── file-manager.tsx# Consolidated File Hub
+│   │   │   ├── companies.tsx # Employer Dossier Guides
+│   │   │   ├── favorites.tsx # Favorited Jobs & Companies
+│   │   │   ├── saved-workspace.tsx# AI Session History & Feedbacks
+│   │   │   └── ...
+│   ├── components/           # UI Elements & App Shells (Accessibility controls, Search)
 │   ├── lib/
 │   │   ├── api.ts            # Authenticated Fetch Client
 │   │   ├── useAuth.tsx       # Local JWT Session Provider
@@ -135,7 +151,7 @@ yarn dev
 ## 🔒 Security & Roles
 
 - **JWT Tokens:** Transmitted via the `Authorization: Bearer <token>` header, verified against [security.py](./backend/app/utils/security.py).
-- **Role Control:** Users are assigned roles (`candidate`, `recruiter`, `hiring_manager`) which restrict access to backend routes and frontend layout sections. Toggling the active role via the header switcher will automatically redirect and mount the corresponding user portal.
+- **Role Control:** Users are assigned roles (`candidate`, `recruiter`, `hiring_manager`, `admin`) which restrict access to backend routes and frontend layout sections. Toggling the active role via the header switcher will automatically redirect and mount the corresponding user portal.
 
 ---
 
@@ -167,6 +183,6 @@ An executive architectural and code health audit has been completed across all s
 
 ### 6. Performance & Responsive UI/UX Optimizations
 - **Single-Roundtrip DB Counts Parallelization:** Refactored `/admin/stats` backend to execute all 4 entity count subqueries inside a single PostgreSQL roundtrip, boosting stats API response speed 4x.
-- **Database Indexes:** Created performance indexing for `notifications(user_id)`, `applications(email)`, `interview_sessions(user_id)`, `cover_letters(user_id)`, and `learning_roadmaps(user_id)` to speed up API lookups.
+- **Database Indexes:** Created performance indexing to speed up API lookups.
 - **Inline Skeleton Loaders:** Added premium inline loader pulse indicators for stats numbers, providing instant visual feedback on metrics cards.
 - **Responsive Mobile Card Layouts:** Redesigned the User Directory Control panel on the Admin workspace to display a mobile-friendly card layout on small devices and clean table rows on desktop screens.

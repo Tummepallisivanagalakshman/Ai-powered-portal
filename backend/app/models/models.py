@@ -31,6 +31,10 @@ class User(Base):
     reports = relationship("Report", back_populates="user", cascade="all, delete-orphan")
     tracker_items = relationship("JobTrackerItem", back_populates="user", cascade="all, delete-orphan")
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
+    calendar_events = relationship("CalendarEvent", back_populates="user", cascade="all, delete-orphan")
+    bookmarks = relationship("Bookmark", back_populates="user", cascade="all, delete-orphan")
+    feedback = relationship("AIFeedback", back_populates="user", cascade="all, delete-orphan")
+    files = relationship("FileRecord", back_populates="user", cascade="all, delete-orphan")
 
 
 class Resume(Base):
@@ -268,5 +272,89 @@ class Notification(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="notifications")
+
+
+class CalendarEvent(Base):
+    __tablename__ = "calendar_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    start_time = Column(DateTime(timezone=True), nullable=False)
+    end_time = Column(DateTime(timezone=True), nullable=False)
+    type = Column(String, default="reminder")  # 'interview', 'learning', 'deadline', 'reminder'
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User", back_populates="calendar_events")
+
+
+class Company(Base):
+    __tablename__ = "companies"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True, nullable=False)
+    overview = Column(Text, nullable=True)
+    industry = Column(String, nullable=True)
+    required_skills = Column(Text, nullable=True)
+    hiring_trends = Column(Text, nullable=True)
+    salary_range = Column(String, nullable=True)
+    interview_process = Column(Text, nullable=True)
+    interview_questions = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class Bookmark(Base):
+    __tablename__ = "bookmarks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    item_type = Column(String, nullable=False)  # 'job', 'company', 'report', 'question', 'roadmap'
+    item_id = Column(String, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User", back_populates="bookmarks")
+
+
+class AIFeedback(Base):
+    __tablename__ = "ai_feedbacks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    target_type = Column(String, nullable=False)  # 'cover_letter', 'roadmap', 'ats', 'interview', 'chatbot'
+    target_id = Column(String, nullable=True)
+    helpful = Column(Boolean, nullable=False)
+    comment = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User", back_populates="feedback")
+
+
+class SystemLog(Base):
+    __tablename__ = "system_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    path = Column(String, nullable=False)
+    method = Column(String, nullable=False)
+    status_code = Column(Integer, nullable=False)
+    response_time = Column(Float, nullable=False)
+    error_message = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class FileRecord(Base):
+    __tablename__ = "file_records"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    filename = Column(String, nullable=False)
+    file_path = Column(String, nullable=False)
+    file_size = Column(Integer, nullable=False)
+    file_type = Column(String, nullable=False)
+    category = Column(String, nullable=False)     # 'resume', 'cover_letter', 'certificate', 'report', 'export'
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User", back_populates="files")
+
 
 

@@ -20,10 +20,18 @@ import {
   Menu,
   Sparkles,
   Shield,
+  Calendar,
+  Folder,
+  Building2,
+  Star,
+  Eye,
+  Sliders,
+  X,
+  FileText as FileIcon
 } from "lucide-react";
 import { useAuth } from "@/lib/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { listNotifications, markNotificationRead, markAllNotificationsRead } from "@/lib/api";
+import { listNotifications, markNotificationRead, markAllNotificationsRead, performGlobalSearch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ChatWidget } from "@/components/ChatWidget";
@@ -55,6 +63,12 @@ const candidateNavItems: NavItem[] = [
   { label: "Resume Builder", to: "/resume-builder", icon: FileText },
   { label: "Career Chat", to: "/career-chat", icon: Bot },
   { label: "Job Tracker", to: "/job-tracker", icon: Kanban },
+  { label: "Saved Workspace", to: "/saved-workspace", icon: Sparkles },
+  { label: "Calendar", to: "/calendar", icon: Calendar },
+  { label: "File Workspace", to: "/file-manager", icon: Folder },
+  { label: "Company Guides", to: "/companies", icon: Building2 },
+  { label: "My Favorites", to: "/favorites", icon: Star },
+  { label: "Alerts History", to: "/notifications-history", icon: Bell },
   { label: "Reports", to: "/reports", icon: BarChart3 },
   { label: "Profile", to: "/profile", icon: User },
   { label: "Settings", to: "/settings", icon: Settings },
@@ -103,6 +117,67 @@ export function AppShell({
   const currentPath = state.location.pathname;
 
   const navItems = getNavItemsForRole(role);
+
+  // Global Search State
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any>(null);
+
+  // Accessibility State
+  const [highContrast, setHighContrast] = useState(
+    typeof window !== "undefined" ? localStorage.getItem("high-contrast") === "true" : false
+  );
+  const [fontSize, setFontSize] = useState(
+    typeof window !== "undefined" ? localStorage.getItem("font-size") || "normal" : "normal"
+  );
+
+  // Apply accessibility classes
+  const applyAccessibility = () => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    
+    if (highContrast) {
+      root.classList.add("high-contrast");
+      localStorage.setItem("high-contrast", "true");
+    } else {
+      root.classList.remove("high-contrast");
+      localStorage.setItem("high-contrast", "false");
+    }
+    
+    root.classList.remove("accessibility-large", "accessibility-xl");
+    if (fontSize === "large") {
+      root.classList.add("accessibility-large");
+    } else if (fontSize === "extra-large") {
+      root.classList.add("accessibility-xl");
+    }
+    localStorage.setItem("font-size", fontSize);
+  };
+
+  useState(() => {
+    applyAccessibility();
+  });
+
+  const toggleHighContrast = () => {
+    setHighContrast(!highContrast);
+    setTimeout(applyAccessibility, 0);
+  };
+
+  const handleFontSizeChange = (sz: string) => {
+    setFontSize(sz);
+    setTimeout(applyAccessibility, 0);
+  };
+
+  const handleSearchSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    try {
+      const res = await performGlobalSearch(searchQuery);
+      setSearchResults(res);
+      setSearchOpen(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const queryClient = useQueryClient();
   const notificationsQuery = useQuery({
@@ -276,15 +351,17 @@ export function AppShell({
               </SheetContent>
             </Sheet>
 
-            {/* Global Search Bar (UI Placeholder) */}
-            <div className="relative hidden sm:block w-full max-w-sm">
+            {/* Global Search Bar */}
+            <form onSubmit={handleSearchSubmit} className="relative hidden sm:block w-full max-w-sm">
               <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search resources, templates, roadmaps..."
-                className="w-full rounded-full border border-border/60 bg-muted/30 py-1.5 pl-9 pr-4 text-sm focus:border-blue-600 focus:outline-none"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full rounded-full border border-border/60 bg-muted/30 py-1.5 pl-9 pr-4 text-sm focus:border-blue-600 focus:outline-none text-foreground"
               />
-            </div>
+            </form>
           </div>
 
           {/* Right: Actions */}
@@ -352,6 +429,45 @@ export function AppShell({
               <option value="hiring_manager">Hiring Manager</option>
               <option value="admin">Admin</option>
             </select>
+
+            {/* Accessibility Settings */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" title="Accessibility controls">
+                  <Sliders className="h-5 w-5 text-muted-foreground hover:text-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 rounded-xl">
+                <DropdownMenuLabel>Accessibility Options</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="p-3 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold">Contrast:</span>
+                    <button
+                      onClick={toggleHighContrast}
+                      className={`text-xs px-2.5 py-1 rounded-lg font-bold border transition-colors ${highContrast ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground"}`}
+                    >
+                      {highContrast ? "High Contrast" : "Standard"}
+                    </button>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-xs font-semibold block">Font Size:</span>
+                    <div className="flex bg-muted/20 p-1 border border-border/30 rounded-lg gap-1">
+                      {(["normal", "large", "extra-large"] as const).map(sz => (
+                        <button
+                          key={sz}
+                          type="button"
+                          onClick={() => handleFontSizeChange(sz)}
+                          className={`flex-1 text-center py-1 rounded text-[10px] font-bold capitalize transition-colors ${fontSize === sz ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+                        >
+                          {sz === "normal" ? "std" : sz === "large" ? "lg" : "xl"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* Theme Toggle */}
             <ThemeToggle />
@@ -479,6 +595,98 @@ export function AppShell({
           </SheetContent>
         </Sheet>
       </nav>
+
+      {/* Global Search Dialog Overlay */}
+      {searchOpen && searchResults && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-soft space-y-4 relative">
+            <button 
+              onClick={() => setSearchOpen(false)} 
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <h3 className="font-display font-bold text-foreground text-lg border-b border-border/40 pb-2">Global Search Results</h3>
+            
+            <div className="space-y-4 divide-y divide-border/20">
+              {/* Jobs section */}
+              {searchResults.jobs?.length > 0 && (
+                <div className="pt-2">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">Jobs</span>
+                  <div className="space-y-1 mt-1.5">
+                    {searchResults.jobs.map((j: any) => (
+                      <Link 
+                        key={j.id} 
+                        to="/jobs" 
+                        onClick={() => setSearchOpen(false)}
+                        className="block text-xs font-bold text-primary hover:underline"
+                      >
+                        {j.title} — {j.company || "Company"} ({j.location})
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Companies section */}
+              {searchResults.companies?.length > 0 && (
+                <div className="pt-4">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">Companies</span>
+                  <div className="space-y-1 mt-1.5">
+                    {searchResults.companies.map((c: any) => (
+                      <Link 
+                        key={c.id} 
+                        to="/companies" 
+                        onClick={() => setSearchOpen(false)}
+                        className="block text-xs font-bold text-primary hover:underline"
+                      >
+                        {c.name} — {c.industry}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Roadmaps section */}
+              {searchResults.roadmaps?.length > 0 && (
+                <div className="pt-4">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">Learning Roadmaps</span>
+                  <div className="space-y-1 mt-1.5">
+                    {searchResults.roadmaps.map((r: any) => (
+                      <Link 
+                        key={r.id} 
+                        to="/saved-workspace" 
+                        onClick={() => setSearchOpen(false)}
+                        className="block text-xs font-bold text-primary hover:underline"
+                      >
+                        Roadmap for {r.target_role}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Candidates section (For recruiters/admins) */}
+              {searchResults.candidates?.length > 0 && (
+                <div className="pt-4">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">Candidates</span>
+                  <div className="space-y-1 mt-1.5">
+                    {searchResults.candidates.map((c: any) => (
+                      <div key={c.id} className="text-xs text-foreground/80 font-semibold">
+                        {c.name} ({c.email}) — Skills: <span className="text-muted-foreground font-normal">{c.skills || "None"}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {Object.values(searchResults).every((arr: any) => !arr || arr.length === 0) && (
+                <p className="text-xs text-muted-foreground py-6 text-center">No results match your search query.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Floating Chatbot Assistant */}
       <ChatWidget />

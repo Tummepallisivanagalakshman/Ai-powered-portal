@@ -308,3 +308,63 @@
     transform: none;
   }
 }
+
+/* ---------- ACCESSIBILITY UPGRADES ---------- */
+.high-contrast {
+  --background: #ffffff !important;
+  --foreground: #000000 !important;
+  --card: #ffffff !important;
+  --card-foreground: #000000 !important;
+  --popover: #ffffff !important;
+  --popover-foreground: #000000 !important;
+  --primary: #000000 !important;
+  --primary-foreground: #ffffff !important;
+  --secondary: #f0f0f0 !important;
+  --secondary-foreground: #000000 !important;
+  --border: #000000 !important;
+  --input: #000000 !important;
+  --ring: #000000 !important;
+}
+
+.high-contrast.dark {
+  --background: #000000 !important;
+  --foreground: #ffffff !important;
+  --card: #000000 !important;
+  --card-foreground: #ffffff !important;
+  --popover: #000000 !important;
+  --popover-foreground: #ffffff !important;
+  --primary: #ffffff !important;
+  --primary-foreground: #000000 !important;
+  --secondary: #1a1a1a !important;
+  --secondary-foreground: #ffffff !important;
+  --border: #ffffff !important;
+  --input: #ffffff !important;
+  --ring: #ffffff !important;
+}
+
+/* Font magnification scales */
+.accessibility-large {
+  font-size: 1.125rem !important; /* 18px */
+}
+.accessibility-large h1 {
+  font-size: 2.25rem !important;
+}
+.accessibility-large h2 {
+  font-size: 1.875rem !important;
+}
+.accessibility-large h3, .accessibility-large h4, .accessibility-large p, .accessibility-large span, .accessibility-large button, .accessibility-large table, .accessibility-large input {
+  font-size: 1rem !important;
+}
+
+.accessibility-xl {
+  font-size: 1.25rem !important; /* 20px */
+}
+.accessibility-xl h1 {
+  font-size: 2.5rem !important;
+}
+.accessibility-xl h2 {
+  font-size: 2.125rem !important;
+}
+.accessibility-xl h3, .accessibility-xl h4, .accessibility-xl p, .accessibility-xl span, .accessibility-xl button, .accessibility-xl table, .accessibility-xl input {
+  font-size: 1.125rem !important;
+}

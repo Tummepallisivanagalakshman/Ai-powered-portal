@@ -67,6 +67,25 @@ def mark_all_as_read(
     db.commit()
     return {"message": "All notifications marked as read"}
 
+@router.delete("/{notification_id}")
+def delete_notification(
+    notification_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Delete a specific notification.
+    """
+    notif = db.query(Notification).filter(
+        Notification.id == notification_id,
+        Notification.user_id == current_user.id
+    ).first()
+    if not notif:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    db.delete(notif)
+    db.commit()
+    return {"status": "success", "message": "Notification deleted successfully"}
+
 def create_user_notification(db: Session, user_id: int, title: str, message: str, type: str = "system"):
     """
     Helper function to create and commit a notification.

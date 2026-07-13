@@ -22,7 +22,7 @@ import { RoleGate } from "@/components/RoleGate";
 import { AppShell } from "@/components/AppShell";
 import { StatusBadge } from "@/components/StatusBadge";
 import { useAuth } from "@/lib/useAuth";
-import { listMyApplications, listOpenJobs, type ApplicationWithJob } from "@/lib/api";
+import { listMyApplications, listOpenJobs, getCandidateAnalytics, type ApplicationWithJob } from "@/lib/api";
 import { STATUS_LABELS } from "@/lib/types";
 import type { Job } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -109,8 +109,42 @@ function CandidateDashboard() {
     queryFn: () => listMyApplications(userId),
   });
 
+  const analyticsQuery = useQuery({
+    queryKey: ["candidate-analytics"],
+    queryFn: getCandidateAnalytics
+  });
+
   const apps = appsQuery.data ?? [];
   const appliedJobIds = new Set(apps.map((a) => a.job_id));
+
+  // Determine dynamic charts values
+  const atsHistory = analyticsQuery.data?.ats_history || [];
+  const dynamicATSData = atsHistory.length > 0 
+    ? atsHistory.map((item: any) => ({ name: item.label, score: item.score }))
+    : [
+        { name: "v1.0", score: 55 },
+        { name: "v1.1", score: 68 },
+        { name: "v2.0", score: 74 },
+        { name: "v2.1", score: 85 },
+      ];
+
+  const currentATS = atsHistory.length > 0 ? atsHistory[atsHistory.length - 1].score : 85;
+  const mockInterviewsCount = analyticsQuery.data?.interview_history?.length || 8;
+  const mockScore = analyticsQuery.data?.interview_history?.length > 0 
+    ? Math.round(analyticsQuery.data.interview_history[analyticsQuery.data.interview_history.length - 1].score)
+    : 72;
+
+  const weeklyActivity = analyticsQuery.data?.weekly_activity 
+    ? analyticsQuery.data.weekly_activity.map((item: any) => ({ name: item.day, score: item.value * 10 }))
+    : [
+        { name: "Mon", score: 60 },
+        { name: "Tue", score: 65 },
+        { name: "Wed", score: 70 },
+        { name: "Thu", score: 68 },
+        { name: "Fri", score: 74 },
+        { name: "Sat", score: 78 },
+        { name: "Sun", score: 82 },
+      ];
 
   const total = apps.length;
   const active = apps.filter((a) => ACTIVE_STATUSES.includes(a.status)).length;
@@ -168,22 +202,22 @@ function CandidateDashboard() {
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-soft hover-lift">
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Resume ATS Score</p>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="font-display text-3xl font-bold tracking-tight">85%</span>
+            <span className="font-display text-3xl font-bold tracking-tight">{currentATS}%</span>
             <span className="text-xs text-green-500 font-semibold flex items-center gap-0.5">
               <TrendingUp className="h-3 w-3" /> +12%
             </span>
           </div>
-          <Progress value={85} className="h-1.5 mt-3 bg-muted" />
+          <Progress value={currentATS} className="h-1.5 mt-3 bg-muted" />
         </div>
 
         {/* Interview Readiness */}
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-soft hover-lift">
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Interview Readiness</p>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="font-display text-3xl font-bold tracking-tight">72%</span>
+            <span className="font-display text-3xl font-bold tracking-tight">{mockScore}%</span>
             <span className="text-xs text-muted-foreground font-semibold">Good</span>
           </div>
-          <Progress value={72} className="h-1.5 mt-3 bg-muted" />
+          <Progress value={mockScore} className="h-1.5 mt-3 bg-muted" />
         </div>
 
         {/* Job Match Percentage */}
@@ -253,7 +287,7 @@ function CandidateDashboard() {
           <h3 className="font-display font-semibold text-sm mb-4">Weekly Career Score</h3>
           <div className="h-60 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={weeklyProgressData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+              <LineChart data={weeklyActivity} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
                 <XAxis dataKey="name" stroke="#888888" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis stroke="#888888" fontSize={11} tickLine={false} axisLine={false} domain={[40, 100]} />
@@ -285,7 +319,7 @@ function CandidateDashboard() {
           <h3 className="font-display font-semibold text-sm mb-4">Resume Version History</h3>
           <div className="h-60 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={resumeHistoryData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+              <AreaChart data={dynamicATSData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
                 <XAxis dataKey="name" stroke="#888888" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis stroke="#888888" fontSize={11} tickLine={false} axisLine={false} domain={[40, 100]} />

@@ -385,3 +385,167 @@ export const listInterviewSessions = async (): Promise<SavedInterview[]> => {
   }
 };
 
+// ─── NEW ENTERPRISE UPGRADE API HELPERS ─────────────────────────────────────
+
+// Notifications
+export const deleteNotification = async (id: number): Promise<any> => {
+  return await apiFetch(`/notifications/${id}`, { method: "DELETE" });
+};
+
+// Calendar
+export interface CalendarEvent {
+  id?: number;
+  title: string;
+  description?: string;
+  start_time: string;
+  end_time: string;
+  type: string;
+  created_at?: string;
+}
+export const getCalendarEvents = async (): Promise<CalendarEvent[]> => {
+  return await apiFetch("/calendar/");
+};
+export const createCalendarEvent = async (event: CalendarEvent): Promise<CalendarEvent> => {
+  return await apiFetch("/calendar/", {
+    method: "POST",
+    body: JSON.stringify(event),
+  });
+};
+export const updateCalendarEvent = async (id: number, event: CalendarEvent): Promise<CalendarEvent> => {
+  return await apiFetch(`/calendar/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(event),
+  });
+};
+export const deleteCalendarEvent = async (id: number): Promise<any> => {
+  return await apiFetch(`/calendar/${id}`, { method: "DELETE" });
+};
+
+// Companies
+export interface CompanyProfile {
+  id: number;
+  name: string;
+  overview: string;
+  industry: string;
+  required_skills: string;
+  hiring_trends: string;
+  salary_range: string;
+  interview_process: string;
+  interview_questions: string;
+  created_at: string;
+}
+export const getCompaniesList = async (): Promise<CompanyProfile[]> => {
+  return await apiFetch("/companies/");
+};
+export const getCompanyDetail = async (id: number): Promise<CompanyProfile> => {
+  return await apiFetch(`/companies/${id}`);
+};
+export const createCompanyProfile = async (company: Partial<CompanyProfile>): Promise<CompanyProfile> => {
+  return await apiFetch("/companies/", {
+    method: "POST",
+    body: JSON.stringify(company),
+  });
+};
+
+// Bookmarks & Favorites
+export interface BookmarkItem {
+  id: number;
+  item_type: string;
+  item_id: string;
+  created_at: string;
+}
+export const getBookmarks = async (): Promise<BookmarkItem[]> => {
+  return await apiFetch("/bookmarks/");
+};
+export const addBookmark = async (itemType: string, itemId: string): Promise<BookmarkItem> => {
+  return await apiFetch("/bookmarks/", {
+    method: "POST",
+    body: JSON.stringify({ item_type: itemType, item_id: itemId }),
+  });
+};
+export const removeBookmark = async (bookmarkId: number): Promise<any> => {
+  return await apiFetch(`/bookmarks/${bookmarkId}`, { method: "DELETE" });
+};
+
+// AI Feedback loops
+export const submitAIFeedback = async (payload: {
+  target_type: string;
+  target_id?: string;
+  helpful: boolean;
+  comment?: string;
+}): Promise<any> => {
+  return await apiFetch("/feedback/", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+};
+
+// File Manager
+export interface FileRecord {
+  id: string;
+  filename: string;
+  file_size: number;
+  file_type: string;
+  category: string;
+  created_at: string;
+}
+export const listMyFiles = async (): Promise<FileRecord[]> => {
+  return await apiFetch("/files/");
+};
+export const renameUserFile = async (fileId: string, newName: string): Promise<any> => {
+  return await apiFetch(`/files/${fileId}/rename?new_name=${encodeURIComponent(newName)}`, {
+    method: "PUT",
+  });
+};
+export const deleteUserFile = async (fileId: string): Promise<any> => {
+  return await apiFetch(`/files/${fileId}`, { method: "DELETE" });
+};
+export const uploadCustomFile = async (category: string, file: File): Promise<FileRecord> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  return await apiFetch(`/files/upload?category=${category}`, {
+    method: "POST",
+    body: formData,
+    // Note: apiFetch should handle raw FormData appropriately or not stringify if it detects it
+  });
+};
+
+// Global Search
+export interface GlobalSearchResults {
+  jobs: any[];
+  companies: any[];
+  roadmaps: any[];
+  cover_letters: any[];
+  interviews: any[];
+  candidates: any[];
+}
+export const performGlobalSearch = async (query: string): Promise<GlobalSearchResults> => {
+  return await apiFetch(`/search/?q=${encodeURIComponent(query)}`);
+};
+
+// Analytics
+export const getCandidateAnalytics = async (): Promise<any> => {
+  return await apiFetch("/analytics/candidate/progress");
+};
+export const getRecruiterAnalytics = async (): Promise<any> => {
+  return await apiFetch("/analytics/recruiter/funnel");
+};
+
+// Admin Moderation & Logs
+export const listJobsModeration = async (): Promise<any[]> => {
+  return await apiFetch("/admin/jobs");
+};
+export const moderateJobStatus = async (jobId: string, status: string): Promise<any> => {
+  return await apiFetch(`/admin/jobs/${jobId}/status?status=${status}`, { method: "PUT" });
+};
+export const getAIUsageAnalytics = async (): Promise<any> => {
+  return await apiFetch("/admin/ai-analytics");
+};
+export const getSystemHealth = async (): Promise<any> => {
+  return await apiFetch("/admin/system-health");
+};
+export const getUserFeedbackList = async (): Promise<any[]> => {
+  return await apiFetch("/admin/feedback");
+};
+
+
