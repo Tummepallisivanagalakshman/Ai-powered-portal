@@ -29,14 +29,27 @@ def analyze_resume_ats(
 
     analysis_data = ATSService.analyze_resume(resume.extracted_text)
     
+    missing = analysis_data.get("missing_keywords") or analysis_data.get("missingKeywords") or []
+    formatting = analysis_data.get("formatting_issues") or analysis_data.get("formattingChecks") or []
+    strengths = analysis_data.get("strengths") or ""
+    weaknesses = analysis_data.get("weaknesses") or ""
+    
+    if isinstance(missing, list):
+        missing = ", ".join(missing)
+    if isinstance(formatting, list):
+        import json
+        formatting = json.dumps(formatting)
+    elif not isinstance(formatting, str):
+        formatting = str(formatting)
+
     # Save to database
     db_ats_score = ATSScore(
         resume_id=resume.id,
-        score=analysis_data["score"],
-        missing_keywords=analysis_data["missing_keywords"],
-        formatting_issues=analysis_data["formatting_issues"],
-        strengths=analysis_data["strengths"],
-        weaknesses=analysis_data["weaknesses"]
+        score=analysis_data.get("score", 70),
+        missing_keywords=missing,
+        formatting_issues=formatting,
+        strengths=strengths,
+        weaknesses=weaknesses
     )
     db.add(db_ats_score)
     db.commit()

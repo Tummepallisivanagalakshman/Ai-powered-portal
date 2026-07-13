@@ -100,3 +100,28 @@ def send_message(
     db.refresh(bot_msg)
 
     return {"id": bot_msg.id, "message": bot_msg.message, "is_bot": bot_msg.is_bot}
+
+@router.get("/history")
+def get_chat_history(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Fetch chatbot conversation history for the current user.
+    """
+    history = db.query(ChatbotHistory).filter(
+        ChatbotHistory.user_id == current_user.id
+    ).order_by(ChatbotHistory.created_at.asc()).all()
+    return [{"id": h.id, "message": h.message, "is_bot": h.is_bot, "created_at": h.created_at} for h in history]
+
+@router.delete("/history")
+def clear_chat_history(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Delete chatbot conversation history for the current user.
+    """
+    db.query(ChatbotHistory).filter(ChatbotHistory.user_id == current_user.id).delete()
+    db.commit()
+    return {"status": "success", "message": "Chat history cleared successfully"}

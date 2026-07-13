@@ -5,7 +5,7 @@ from typing import List, Optional, Any
 import uuid
 import urllib.parse
 from app.dependencies import get_db, get_current_user
-from app.models.models import User, Application, Job, InterviewQuestion
+from app.models.models import User, Application, Job, InterviewQuestion, CoverLetter, LearningRoadmap
 from app.services.ai_service import AIService
 
 router = APIRouter(
@@ -106,9 +106,26 @@ class CoverLetterRequest(BaseModel):
     tone: str
 
 @router.post("/cover-letter")
-def generate_cover_letter(req: CoverLetterRequest, current_user: User = Depends(get_current_user)):
+def generate_cover_letter(
+    req: CoverLetterRequest, 
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     letter = AIService.generate_cover_letter(req.jobDescription, req.company, req.jobTitle)
-    return {"letter": letter}
+    
+    # Save cover letter to the database!
+    db_cover_letter = CoverLetter(
+        user_id=current_user.id,
+        company_name=req.company,
+        job_title=req.jobTitle,
+        content=letter,
+        tone=req.tone
+    )
+    db.add(db_cover_letter)
+    db.commit()
+    db.refresh(db_cover_letter)
+    
+    return {"letter": letter, "id": db_cover_letter.id}
 
 class ATSRequest(BaseModel):
     resumeText: str
@@ -147,15 +164,30 @@ class RoadmapRequest(BaseModel):
     targetRole: str
 
 @router.post("/roadmap")
-def generate_learning_roadmap(req: RoadmapRequest, current_user: User = Depends(get_current_user)):
+def generate_learning_roadmap(
+    req: RoadmapRequest, 
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     # Return 5 structured lessons with search helpers matching targetRole
     encoded_role = urllib.parse.quote(req.targetRole)
-    return {
-        "lessons": [
-            { "title": f"Fundamentals of {req.targetRole}", "duration": "2 hrs", "difficulty": "Easy", "category": "Core", "link": f"https://google.com/search?q={encoded_role}+fundamentals" },
-            { "title": f"Intermediate {req.targetRole} Design", "duration": "3 hrs", "difficulty": "Medium", "category": "Design", "link": f"https://google.com/search?q={encoded_role}+architecture" },
-            { "title": f"Advanced Patterns in {req.targetRole}", "duration": "4 hrs", "difficulty": "Hard", "category": "Advanced", "link": f"https://google.com/search?q={encoded_role}+advanced+coding" },
-            { "title": f"Testing & CI/CD for {req.targetRole}", "duration": "2 hrs", "difficulty": "Medium", "category": "Testing", "link": f"https://google.com/search?q={encoded_role}+testing+tools" },
-            { "title": f"Mock Reviews & Deployment", "duration": "3 hrs", "difficulty": "Easy", "category": "Interview", "link": f"https://google.com/search?q={encoded_role}+interview+prep" }
-        ]
-    }
+    lessons = [
+        { "title": f"Fundamentals of {req.targetRole}", "duration": "2 hrs", "difficulty": "Easy", "category": "Core", "link": f"https://google.com/search?q={encoded_role}+fundamentals" },
+        { "title": f"Intermediate {req.targetRole} Design", "duration": "3 hrs", "difficulty": "Medium", "category": "Design", "link": f"https://google.com/search?q={encoded_role}+architecture" },
+        { "title": f"Advanced Patterns in {req.targetRole}", "duration": "4 hrs", "difficulty": "Hard", "category": "Advanced", "link": f"https://google.com/search?q={encoded_role}+advanced+coding" },
+        { "title": f"Testing & CI/CD for {req.targetRole}", "duration": "2 hrs", "difficulty": "Medium", "category": "Testing", "link": f"https://google.com/search?q={encoded_role}+testing+tools" },
+        { "title": f"Mock Reviews & Deployment", "duration": "3 hrs", "difficulty": "Easy", "category": "Interview", "link": f"https://google.com/search?q={encoded_role}+interview+prep" }
+    ]
+    
+    # Save roadmap to the database!
+    db_roadmap = LearningRoadmap(
+        user_id=current_user.id,
+        target_role=req.targetRole,
+        current_skills=req.currentSkills,
+        plan_json=json.dumps(lessons)
+    )
+    db.add(db_roadmap)
+    db.commit()
+    db.refresh(db_roadmap)
+    
+    return {"lessons": lessons, "id": db_roadmap.id}

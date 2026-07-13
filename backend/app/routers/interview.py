@@ -37,6 +37,66 @@ def create_interview_session(
     db.refresh(db_session)
     return db_session
 
+@router.get("/sessions")
+def get_interview_sessions(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    List all mock interview sessions for the current user.
+    """
+    sessions = db.query(InterviewSession).filter(InterviewSession.user_id == current_user.id).order_by(InterviewSession.created_at.desc()).all()
+    for session in sessions:
+        if session.total_score is None:
+            answers = db.query(InterviewAnswer).filter(InterviewAnswer.session_id == session.id).all()
+            if answers:
+                scores = [a.score for a in answers]
+                session.total_score = sum(scores) / len(scores)
+            else:
+                session.total_score = 0.0
+    return sessions
+
+@router.get("/sessions/{session_id}")
+def get_interview_session(
+    session_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Retrieve details of a specific interview session.
+    """
+    session = db.query(InterviewSession).filter(
+        InterviewSession.id == session_id,
+        InterviewSession.user_id == current_user.id
+    ).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
+    return session
+
+@router.get("/sessions/{session_id}/feedback")
+def get_interview_feedback(
+    session_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Retrieve answers and scoring evaluation feedback for a specific session.
+    """
+    session = db.query(InterviewSession).filter(
+        InterviewSession.id == session_id,
+        InterviewSession.user_id == current_user.id
+    ).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
+    return {
+        "id": session.id,
+        "job_role": session.job_role,
+        "difficulty": session.difficulty,
+        "created_at": session.created_at,
+        "total_score": session.total_score or 0.0,
+        "answers": session.answers
+    }
+
 @router.post("/answers/evaluate")
 def evaluate_and_save_answer(
     request: InterviewAnswerCreate,
@@ -69,6 +129,17 @@ def evaluate_and_save_answer(
     db.commit()
     db.refresh(db_answer)
     
+    # Update session score metrics
+    answers = db.query(InterviewAnswer).filter(InterviewAnswer.session_id == session.id).all()
+    if answers:
+        scores = [a.score for a in answers]
+        avg_score = sum(scores) / len(scores)
+        session.total_score = avg_score
+        session.technical_score = avg_score
+        session.communication_score = avg_score
+        session.confidence_score = avg_score
+        db.commit()
+    
     # Trigger notification
     try:
         create_user_notification(
@@ -81,4 +152,12 @@ def evaluate_and_save_answer(
     except Exception as e:
         print(f"Failed to generate notification: {e}")
         
-    return db_answer
+    return {
+        "id": db_answer.id,
+        "session_id": db_answer.session_id,
+        "question": db_answer.question,
+        "answer": db_answer.answer,
+        "score": db_answer.score,
+        "feedback": db_answer.feedback,
+        "better_answer": db_answer.better_answer
+    }
