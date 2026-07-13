@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Briefcase,
   Building2,
@@ -12,15 +12,55 @@ import {
   Loader2,
   MapPin,
   Send,
+  Plus,
+  Pencil,
+  Trash2,
 } from "lucide-react";
-import { RoleGate } from "@/components/RoleGate";
 import { AppShell } from "@/components/AppShell";
 import { useAuth } from "@/lib/useAuth";
-import { listMyApplications, listOpenJobs } from "@/lib/api";
+import { 
+  listMyApplications, 
+  listOpenJobs, 
+  listMyJobs, 
+  listAllApplications, 
+  deleteJob, 
+  setJobStatus, 
+  createJob, 
+  updateJob, 
+  type JobInput 
+} from "@/lib/api";
 import type { Job } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
+} from "@/components/ui/dialog";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from "@/components/ui/alert-dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/jobs")({
   head: () => ({
@@ -40,12 +80,26 @@ export const Route = createFileRoute("/_authenticated/jobs")({
       },
     ],
   }),
-  component: () => (
-    <RoleGate role="candidate">
-      <JobListings />
-    </RoleGate>
-  ),
+  component: () => <JobListingsPage />,
 });
+
+function JobListingsPage() {
+  const { role, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (role === "recruiter" || role === "hiring_manager" || role === "admin") {
+    return <RecruiterJobManagement />;
+  }
+
+  return <JobListings />;
+}
 
 function jobSkills(job: Job): string[] {
   if (job.skills && job.skills.length > 0) return job.skills;
@@ -308,5 +362,362 @@ function Meta({
         <p className="text-sm text-foreground">{value}</p>
       </div>
     </div>
+  );
+}
+
+// ─── Recruiter Job Management Components ─────────────────────────────────────
+
+function RecruiterJobManagement() {
+  const { user } = useAuth();
+  const userId = user!.id;
+  const qc = useQueryClient();
+  const [formJob, setFormJob] = useState<Job | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Job | null>(null);
+
+  const jobsQuery = useQuery({
+    queryKey: ["my-jobs", userId],
+    queryFn: () => listMyJobs(),
+  });
+  const appsQuery = useQuery({
+    queryKey: ["all-applications"],
+    queryFn: listAllApplications,
+  });
+
+  const jobs = jobsQuery.data ?? [];
+  const apps = appsQuery.data ?? [];
+
+  const refreshJobs = () => {
+    qc.invalidateQueries({ queryKey: ["my-jobs", userId] });
+    qc.invalidateQueries({ queryKey: ["open-jobs"] });
+  };
+
+  const removeJob = useMutation({
+    mutationFn: (id: string) => deleteJob(id),
+    onSuccess: () => {
+      toast.success("Job deleted");
+      refreshJobs();
+      setDeleteTarget(null);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  function openCreate() {
+    setFormJob(null);
+    setFormOpen(true);
+  }
+  function openEdit(job: Job) {
+    setFormJob(job);
+    setFormOpen(true);
+  }
+
+  return (
+    <AppShell
+      title="Job Management"
+      subtitle="Create, edit, and moderate your active job postings."
+      actions={
+        <Button onClick={openCreate}>
+          <Plus className="mr-1.5 h-4 w-4" /> New job posting
+        </Button>
+      }
+    >
+      {jobsQuery.isLoading ? (
+        <div className="flex justify-center py-16">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
+      ) : jobs.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border py-16 text-center text-sm text-muted-foreground">
+          You haven't posted any jobs yet. Create your first posting.
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
+          {jobs.map((job) => {
+            const count = apps.filter((a) => a.job_id === job.id).length;
+            return (
+              <div
+                key={job.id}
+                className="flex flex-col rounded-xl border border-border bg-card p-5"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="font-display text-lg font-semibold leading-tight">
+                      {job.title}
+                    </h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {[job.company, job.department].filter(Boolean).join(" · ") || "—"}
+                    </p>
+                  </div>
+                  <Badge variant={job.status === "open" ? "default" : "secondary"}>
+                    {job.status === "open" ? "Open" : "Closed"}
+                  </Badge>
+                </div>
+
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                  {job.location && (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-3.5 w-3.5" /> {job.location}
+                    </span>
+                  )}
+                  {job.employment_type && <span>{job.employment_type}</span>}
+                  {job.experience_required && <span>{job.experience_required}</span>}
+                </div>
+
+                <p className="mt-3 text-sm text-muted-foreground">
+                  {count} application{count === 1 ? "" : "s"}
+                </p>
+
+                <div className="mt-auto flex flex-wrap gap-2 pt-4">
+                  <Button variant="outline" size="sm" onClick={() => openEdit(job)}>
+                    <Pencil className="mr-1.5 h-4 w-4" /> Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      await setJobStatus(job.id, job.status === "open" ? "closed" : "open");
+                      refreshJobs();
+                    }}
+                  >
+                    {job.status === "open" ? "Close" : "Reopen"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => setDeleteTarget(job)}
+                  >
+                    <Trash2 className="mr-1.5 h-4 w-4" /> Delete
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Recruiter Job Dialog Form */}
+      <RecruiterJobFormDialog
+        open={formOpen}
+        job={formJob}
+        userId={userId}
+        onClose={() => setFormOpen(false)}
+        onSaved={() => {
+          refreshJobs();
+          setFormOpen(false);
+        }}
+      />
+
+      {/* Delete Confirmation Alert */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this job posting?</AlertDialogTitle>
+            <AlertDialogDescription>
+              "{deleteTarget?.title}" and its applications will be permanently removed. This cannot
+              be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteTarget && removeJob.mutate(deleteTarget.id)}
+            >
+              {removeJob.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </AppShell>
+  );
+}
+
+const EMPTY_JOB: JobInput = {
+  title: "",
+  company: "",
+  department: "",
+  location: "",
+  experience_required: "",
+  employment_type: "Full-time",
+  description: "",
+  requirements: "",
+  skills: [],
+  status: "open",
+};
+
+function jobToInput(job: Job): JobInput {
+  return {
+    title: job.title ?? "",
+    company: job.company ?? "",
+    department: job.department ?? "",
+    location: job.location ?? "",
+    experience_required: job.experience_required ?? "",
+    employment_type: job.employment_type ?? "Full-time",
+    description: job.description ?? "",
+    requirements: job.requirements ?? "",
+    skills: job.skills ?? [],
+    status: job.status,
+  };
+}
+
+function RecruiterJobFormDialog({
+  open,
+  job,
+  userId,
+  onClose,
+  onSaved,
+}: {
+  open: boolean;
+  job: Job | null;
+  userId: string;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const isEdit = !!job;
+  const [form, setForm] = useState<JobInput>(EMPTY_JOB);
+  const [seededId, setSeededId] = useState<string | null>(null);
+
+  // Sync form when the dialog opens for a different job.
+  const targetId = job?.id ?? "new";
+  if (open && seededId !== targetId) {
+    setForm(job ? jobToInput(job) : EMPTY_JOB);
+    setSeededId(targetId);
+  }
+  if (!open && seededId !== null) {
+    setSeededId(null);
+  }
+
+  const mutation = useMutation({
+    mutationFn: () => (isEdit ? updateJob(job!.id, form) : createJob(userId, form)),
+    onSuccess: () => {
+      toast.success(isEdit ? "Job updated!" : "Job posted!");
+      onSaved();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const set = (k: keyof JobInput) => (e: { target: { value: string } }) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{isEdit ? "Edit job posting" : "Create job posting"}</DialogTitle>
+          <DialogDescription>Candidates will see this and apply directly.</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label>Job title</Label>
+            <Input
+              value={form.title}
+              onChange={set("title")}
+              placeholder="Senior Frontend Engineer"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Company</Label>
+              <Input value={form.company} onChange={set("company")} placeholder="Acme Inc." />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Department</Label>
+              <Input
+                value={form.department}
+                onChange={set("department")}
+                placeholder="Engineering"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Location</Label>
+              <Input value={form.location} onChange={set("location")} placeholder="Remote" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Experience required</Label>
+              <Input
+                value={form.experience_required}
+                onChange={set("experience_required")}
+                placeholder="3+ years"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Employment type</Label>
+              <Input
+                value={form.employment_type}
+                onChange={set("employment_type")}
+                placeholder="Full-time"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Status</Label>
+              <Select
+                value={form.status}
+                onValueChange={(v) => setForm((f) => ({ ...f, status: v as "open" | "closed" }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="open">Open</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Skills required</Label>
+            <Input
+              value={form.skills.join(", ")}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  skills: e.target.value
+                    .split(",")
+                    .map((s) => s.trim())
+                    .filter(Boolean),
+                }))
+              }
+              placeholder="React, TypeScript, GraphQL"
+            />
+            <p className="text-xs text-muted-foreground">Separate skills with commas.</p>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Job description</Label>
+            <Textarea
+              rows={4}
+              value={form.description}
+              onChange={set("description")}
+              placeholder="What the role involves…"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Requirements</Label>
+            <Textarea
+              rows={3}
+              value={form.requirements}
+              onChange={set("requirements")}
+              placeholder="Qualifications, responsibilities, nice-to-haves…"
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => mutation.mutate()}
+            disabled={mutation.isPending || !form.title || !form.description}
+          >
+            {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isEdit ? "Save changes" : "Post job"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
