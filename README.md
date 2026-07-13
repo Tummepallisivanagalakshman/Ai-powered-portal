@@ -28,7 +28,7 @@ The application has been migrated from a frontend-only Supabase design to a deco
 - **My Favorites Board:** Unified star board to bookmark target jobs and company guides.
 
 ### 🛡️ Recruiter, Hiring Manager, & Admin Workspaces
-- **Job Management:** Post, edit, draft, and delete jobs from the dashboard.
+- **Job Management:** A shared, dynamic `/jobs` route that dynamically serves candidates with open job listings and recruiters/hiring managers/admins with a self-contained job creation, status control, editing, and deletion dashboard.
 - **AI Candidate Screening:** Automatically evaluates applicant profiles, returning match scores, strengths/concerns, and interview questions.
 - **Recruiter Funnel Analytics:** Interactive pipeline progression charts (Applied -> Shortlisted -> Hired) and monthly sourcing trends.
 - **Admin Dashboard Console:** Aggregates DB statistics, lets admins manage user directories, edit preferred roles, and view system security audits.
